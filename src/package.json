@@ -1,0 +1,14 @@
+{
+  "name": "cyberdata-bells",
+  "version": "0.1.0",
+  "description": "Interactive Playwright automation for creating CyberData bell schedule events",
+  "main": "bells.js",
+  "scripts": {
+    "start": "node bells.js"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
