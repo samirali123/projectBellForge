@@ -236,4 +236,43 @@ module.exports = {
       { title: "PS", start: "11:40", end: "12:00", color: "Black", details: "Prayer Service/Mentor Group" },
     ]),
   },
+
+  // -------------------------------------------------------------- FINALS --
+  // Transcribed from O'Dea's Finals schedule slides ("Maroon 1 & 2 Finals",
+  // "Maroon 3 & 4 Finals", "Gold Finals 2027").
+  maroon12Finals: {
+    label: "Maroon 1 & 2 Finals",
+    events: buildEvents([
+      { title: "SRC", start: "07:00", end: "08:00", color: "Maroon", details: "SRC Open Study Hall" },
+      { title: "IB", start: "08:10", end: "09:40", color: "Maroon", details: "Irish Block" },
+      { title: "M1F", start: "09:45", end: "11:15", color: "Maroon", details: "Maroon 1 Final" },
+      { title: "Lunch", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
+      { title: "M2F", start: "11:50", end: "13:20", color: "Maroon", details: "Maroon 2 Final" },
+      { title: "SRC", start: "13:25", end: "15:00", color: "Maroon", details: "SRC Open Study Hall" },
+    ]),
+  },
+
+  maroon34Finals: {
+    label: "Maroon 3 & 4 Finals",
+    events: buildEvents([
+      { title: "SRC", start: "07:00", end: "08:00", color: "Maroon", details: "SRC Open Study Hall" },
+      { title: "IB", start: "08:10", end: "09:40", color: "Maroon", details: "Irish Block" },
+      { title: "M3F", start: "09:45", end: "11:15", color: "Maroon", details: "Maroon 3 Final" },
+      { title: "Lunch", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
+      { title: "M4F", start: "11:50", end: "13:20", color: "Maroon", details: "Maroon 4 Final" },
+      { title: "SRC", start: "13:25", end: "15:00", color: "Maroon", details: "SRC Open Study Hall" },
+    ]),
+  },
+
+  goldFinals: {
+    label: "Gold Finals",
+    events: buildEvents([
+      { title: "SRC", start: "07:00", end: "08:00", color: "Gold", details: "SRC Open Study Hall" },
+      { title: "G1F", start: "08:10", end: "09:40", color: "Gold", details: "Gold 1 Final" },
+      { title: "G2F", start: "09:45", end: "11:15", color: "Gold", details: "Gold 2 Final" },
+      { title: "Lunch", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
+      { title: "G3F", start: "11:50", end: "13:20", color: "Gold", details: "Gold 3 Final" },
+      { title: "SRC", start: "13:25", end: "15:00", color: "Gold", details: "SRC Open Study Hall" },
+    ]),
+  },
 };

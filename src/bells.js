@@ -11,7 +11,8 @@ const { stdin, stdout } = require("process");
 const schedules = require("./schedules");
 const { connect, createEvent } = require("./playwright");
 
-// Menu order matches PROJECT_SPEC.md §7.1 / §9.
+// Menu order matches PROJECT_SPEC.md §7.1 / §9, plus Finals schedules
+// added afterward.
 const MENU_ORDER = [
   "maroon",
   "gold",
@@ -27,6 +28,9 @@ const MENU_ORDER = [
   "goldLate2hr",
   "maroonBrotherhood",
   "unifiedDay",
+  "maroon12Finals",
+  "maroon34Finals",
+  "goldFinals",
 ];
 
 const BLANK = "blank"; // range mode only — "no school / no bells on this date"
@@ -95,23 +99,24 @@ async function promptSchedule(rl) {
 }
 
 // Same 14 schedule types plus Blank, asked once per date in a range.
+// Blank is "0" rather than tacked onto the end of the numbered list, so
+// it reads as "nothing" rather than just another schedule choice.
 async function promptScheduleForDate(rl, dateStr) {
   console.log(`\n${dateStr} — Choose Schedule\n`);
+  console.log(` 0) ${BLANK_LABEL}`);
   MENU_ORDER.forEach((key, i) => {
     const num = String(i + 1).padStart(2, " ");
     console.log(`${num}) ${schedules[key].label}`);
   });
-  const blankNum = MENU_ORDER.length + 1;
-  console.log(`${blankNum}) ${BLANK_LABEL}`);
 
   while (true) {
     const answer = (await rl.question("\nSelection: ")).trim();
+    if (answer !== "" && Number(answer) === 0) return BLANK;
     const idx = Number(answer) - 1;
-    if (idx === MENU_ORDER.length) return BLANK;
     if (Number.isInteger(idx) && idx >= 0 && idx < MENU_ORDER.length) {
       return MENU_ORDER[idx];
     }
-    console.log(`Please enter a number between 1 and ${blankNum}.`);
+    console.log(`Please enter 0, or a number between 1 and ${MENU_ORDER.length}.`);
   }
 }
 
