@@ -3,7 +3,7 @@
 #
 # Double-click this in Finder to run the CyberData bell automation.
 # Handles the "launch Edge with remote debugging" step for you, then
-# runs the interactive CLI (src/bells.js).
+# runs the interactive CLI (engine/bells.js).
 #
 # Uses Microsoft Edge, not Chrome — Playwright's CDP attach works with any
 # Chromium-based browser, and Chrome on this machine had an unresolved
@@ -19,7 +19,7 @@ cd "$DIR" || exit 1
 
 if ! command -v node >/dev/null 2>&1; then
   echo "node isn't on PATH in this shell. Install Node.js, or open a normal"
-  echo "Terminal where 'node -v' works and run: node src/bells.js"
+  echo "Terminal where 'node -v' works and run: node engine/bells.js"
   read -rp "Press Enter to close..." _
   exit 1
 fi
@@ -47,7 +47,7 @@ if ! curl -s -o /dev/null "http://localhost:${CDP_PORT}/json/version"; then
 fi
 
 echo
-node "$DIR/src/bells.js"
+node "$DIR/engine/bells.js"
 
 echo
 read -rp "Done. Press Enter to close this window..." _

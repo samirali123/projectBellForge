@@ -1,7 +1,7 @@
 // config.js
 // Centralized tunable settings. Nothing schedule-specific or
 // selector-specific belongs here — see schedules.js / colors.js and the
-// SELECTORS block at the top of playwright.js instead.
+// selectors.js instead.
 
 module.exports = {
   // Chrome DevTools Protocol (CDP) endpoint. Launch Edge yourself with, e.g.:
@@ -30,7 +30,7 @@ module.exports = {
 
   // Audio dropdown value — confirmed as the dialog's own default (see the
   // "Audio:" screenshot in PROJECT_SPEC.md history), set explicitly anyway
-  // since playwright.js has a confirmed selector for it.
+  // since selectors.js has a confirmed selector for it.
   audioFile: "odeabell.wav",
 
   // PGroup / Times to play / Relay are deliberately NOT set here as

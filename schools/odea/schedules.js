@@ -17,12 +17,13 @@
 // CyberData shows on the event (defaults to `title` if omitted).
 //
 // --- Where these times came from --------------------------------------
-// Full bell-time table for all 14 schedule types, transcribed from O'Dea's
-// public "Bell Schedule" page (Student Life > Bell Schedule). Maroon Day,
-// Gold Day, and Maroon 1-Hour Late Start were additionally cross-checked
-// against cyberdata_bells.sh, which encodes times already confirmed
-// against real hand-entered CyberData events for Aug 31 / Sept 1-4, 2026 —
-// those three match exactly.
+// Bell-time table for the original 14 schedule types transcribed from
+// O'Dea's public "Bell Schedule" page (Student Life > Bell Schedule), plus
+// 3 Finals schedules added later from O'Dea's Finals-week slides. Maroon
+// Day, Gold Day, and Maroon 1-Hour Late Start were additionally
+// cross-checked against cyberdata_bells.sh, which encodes times already
+// confirmed against real hand-entered CyberData events for Aug 31 /
+// Sept 1-4, 2026 — those three match exactly.
 //
 // --- Pattern -------------------------------------------------------
 // Every schedule is a straight-through sequence of class blocks. Between
@@ -51,7 +52,33 @@ function buildEvents(blocks) {
   return events;
 }
 
-module.exports = {
+// Menu display order. Deliberately separate from property declaration
+// order above (which is grouped by family — Maroon, then Gold, then
+// Unified, then Finals — for readability) — this is the order operators
+// actually see day to day (Maroon/Gold days alternate), so it's called
+// out explicitly here rather than left as an implicit side effect of
+// how the object below happens to be written.
+const order = [
+  "maroon",
+  "gold",
+  "maroonLate1hr",
+  "goldLate1hr",
+  "maroonAmIb",
+  "goldLate1hrPmIb",
+  "maroonPmIb",
+  "goldPmIb",
+  "maroonNoonDismissal",
+  "goldNoonDismissal",
+  "maroonLate2hr",
+  "goldLate2hr",
+  "maroonBrotherhood",
+  "unifiedDay",
+  "maroon12Finals",
+  "maroon34Finals",
+  "goldFinals",
+];
+
+const schedules = {
   // ------------------------------------------------------------- MAROON --
   maroon: {
     label: "Maroon Day",
@@ -276,3 +303,5 @@ module.exports = {
     ]),
   },
 };
+
+module.exports = { order, schedules };

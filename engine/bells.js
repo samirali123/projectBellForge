@@ -1,37 +1,22 @@
 #!/usr/bin/env node
 // bells.js
 //
-// Interactive CLI entry point. This file talks to the human — menu, date
-// prompt(s), confirmation, progress display. It contains no Playwright
-// calls and no schedule data of its own; it orchestrates schedules.js
-// (data) and playwright.js (browser automation engine).
+// Interactive CLI entry point. This file talks to the human — school
+// picker, menu, date prompt(s), confirmation, progress display. It
+// contains no Playwright calls and no school-specific data of its own;
+// school-loader.js hands it a school's schedules + a ready-to-use
+// connect()/createEvent() pair, and this file just orchestrates them.
 
 const readline = require("readline/promises");
 const { stdin, stdout } = require("process");
-const schedules = require("./schedules");
-const { connect, createEvent } = require("./playwright");
+const { listSchools, loadSchool } = require("./school-loader");
 
-// Menu order matches PROJECT_SPEC.md §7.1 / §9, plus Finals schedules
-// added afterward.
-const MENU_ORDER = [
-  "maroon",
-  "gold",
-  "maroonLate1hr",
-  "goldLate1hr",
-  "maroonAmIb",
-  "goldLate1hrPmIb",
-  "maroonPmIb",
-  "goldPmIb",
-  "maroonNoonDismissal",
-  "goldNoonDismissal",
-  "maroonLate2hr",
-  "goldLate2hr",
-  "maroonBrotherhood",
-  "unifiedDay",
-  "maroon12Finals",
-  "maroon34Finals",
-  "goldFinals",
-];
+// Set once, right after the school is chosen, in run() — everything below
+// reads these via closure rather than importing one school's data directly.
+let schedules;
+let MENU_ORDER;
+let connect;
+let createEvent;
 
 const BLANK = "blank"; // range mode only — "no school / no bells on this date"
 const BLANK_LABEL = "Blank (no school / no bells)";
@@ -71,6 +56,30 @@ function enumerateDates(startStr, endStr) {
   return dates;
 }
 
+async function promptSchool(rl) {
+  const schools = listSchools();
+  if (schools.length === 0) {
+    throw new Error(
+      "No schools found in ../schools. Add a school folder (see schools/odea for the shape) first."
+    );
+  }
+
+  console.log("\nChoose School\n");
+  schools.forEach((s, i) => {
+    const num = String(i + 1).padStart(2, " ");
+    console.log(`${num}) ${s.name}`);
+  });
+
+  while (true) {
+    const answer = (await rl.question("\nSelection: ")).trim();
+    const idx = Number(answer) - 1;
+    if (Number.isInteger(idx) && idx >= 0 && idx < schools.length) {
+      return schools[idx].id;
+    }
+    console.log(`Please enter a number between 1 and ${schools.length}.`);
+  }
+}
+
 async function promptMode(rl) {
   console.log("\n1) Single day\n2) Date range\n");
   while (true) {
@@ -98,9 +107,9 @@ async function promptSchedule(rl) {
   }
 }
 
-// Same 14 schedule types plus Blank, asked once per date in a range.
-// Blank is "0" rather than tacked onto the end of the numbered list, so
-// it reads as "nothing" rather than just another schedule choice.
+// Same schedule types plus Blank, asked once per date in a range. Blank is
+// "0" rather than tacked onto the end of the numbered list, so it reads as
+// "nothing" rather than just another schedule choice.
 async function promptScheduleForDate(rl, dateStr) {
   console.log(`\n${dateStr} — Choose Schedule\n`);
   console.log(` 0) ${BLANK_LABEL}`);
@@ -174,9 +183,8 @@ async function promptConfirmBatch(rl, assignments) {
 
 // Shared execution path for both single-day and range runs. `assignments`
 // is an ordered list of { date, scheduleKey } — a single-day run is just a
-// one-item list. Halts the whole run on the first failed event, per
-// PROJECT_SPEC.md §11 — never silently skips a date or keeps going with an
-// unknown calendar state.
+// one-item list. Halts the whole run on the first failed event — never
+// silently skips a date or keeps going with an unknown calendar state.
 async function runAssignments(assignments) {
   console.log("\nAttaching to Edge...");
   const { page } = await connect();
@@ -273,6 +281,15 @@ async function run() {
   const rl = readline.createInterface({ input: stdin, output: stdout });
 
   try {
+    const schoolId = await promptSchool(rl);
+    const school = loadSchool(schoolId);
+    schedules = school.schedules;
+    MENU_ORDER = school.order;
+    connect = school.connect;
+    createEvent = school.createEvent;
+
+    console.log(`\n${school.meta.name}`);
+
     const mode = await promptMode(rl);
     if (mode === "single") {
       await runSingleDay(rl);
