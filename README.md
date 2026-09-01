@@ -145,30 +145,54 @@ CyberDataAutomation/
 │                                  e.g. the file layout it describes, predates this restructure)
 └── schools/
     └── odea/                    one folder per school
-        ├── school.json           { id, name, platform } — which platforms/*.js engine this school uses
+        ├── school.json           { id, name, platform, passwordSalt, passwordHash } — see "School passwords"
         ├── schedules.js          this school's real bell times for every schedule type, plus menu order
         ├── colors.js             semantic color name -> this school's color-picker button label
         ├── config.js             this school's CDP port, device IP, delays, retries, audio file
         └── selectors.js          this school's confirmed page locators (see inspect.js)
 ```
 
+## School passwords
+
+Every school must have a password before it can be opened — `bells.js`
+and `inspect.js` both refuse to load a school with no password set
+(fail-closed), so this isn't optional. Set or change one with:
+
+```bash
+node engine/set-school-password.js
+```
+
+It writes only a salted hash into that school's `school.json` — the
+plaintext password is never stored anywhere, and typing it happens
+locally in your own terminal, not through any AI assistant or chat.
+
+Be clear about what this actually protects against: there's no server, so
+this is a local gate that stops someone from casually opening a school
+they don't administer — not a real defense against someone determined
+enough to dig through the app's own files. That's the right threat model
+for "keep one school's staff out of another school's calendar," but don't
+treat it as stronger than it is.
+
 ## Adding a new school
 
 1. Copy `schools/odea/` to `schools/<new-school-id>/`.
-2. Edit `school.json` — new `id` (must match the folder name) and `name`.
-   Leave `platform: "cyberdata"` unless this school turns out to use a
-   different bell/calendar system entirely (see below).
-3. Edit `config.js` — this school's device IP (`cyberDataHost`) and audio
+2. Edit `school.json` — new `id` (must match the folder name) and `name`;
+   remove the copied `passwordSalt`/`passwordHash` fields (each school
+   needs its own password, not O'Dea's). Leave `platform: "cyberdata"`
+   unless this school turns out to use a different bell/calendar system
+   entirely (see below).
+3. Run `node engine/set-school-password.js` and set this school's password.
+4. Edit `config.js` — this school's device IP (`cyberDataHost`) and audio
    file name at minimum.
-4. Hand-author `schedules.js` with this school's real bell times (see the
+5. Hand-author `schedules.js` with this school's real bell times (see the
    comments in `schools/odea/schedules.js` for the data shape and the
    `order` array that controls menu display order).
-5. Launch Edge with remote debugging, log into this school's CyberData,
+6. Launch Edge with remote debugging, log into this school's CyberData,
    then run `node engine/inspect.js` and pick the new school — use "Pick
    locator" against its real New Event dialog to confirm/correct
    `selectors.js` and `colors.js` (CyberData markup and color-picker
    labels can differ per instance; don't assume O'Dea's values transfer).
-6. Run `node engine/bells.js`, pick the new school, and do a real test run
+7. Run `node engine/bells.js`, pick the new school, and do a real test run
    on a throwaway date before trusting it for a live schedule.
 
 If a school turns out to be on a completely different bell/calendar

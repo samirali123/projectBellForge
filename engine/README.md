@@ -21,6 +21,19 @@ just a map of what's in this folder specifically.
   Playwright Inspector against that school's real, logged-in CyberData
   page so you can confirm/correct its `selectors.js` with the element
   picker instead of guessing.
+- **`school-selector.js`** — shared "pick a school, then prove you're
+  allowed in" prompt used by both `bells.js` and `inspect.js`, so the
+  password gate can't drift between them.
+- **`school-auth.js`** — password hashing/verification (Node's built-in
+  `crypto`, scrypt). `school.json` only ever holds a salt + hash, never a
+  plaintext password.
+- **`set-school-password.js`** — run this yourself to set or change a
+  school's password (see the top-level README's "School passwords"
+  section).
+- **`masked-prompt.js`** / **`readline-compat.js`** — plumbing so password
+  input doesn't echo to the terminal. `readline/promises`'s Interface
+  turned out not to expose the hook this needs (confirmed by testing, not
+  assumed), so these route through the classic `readline` module instead.
 
 `PROJECT_SPEC.md` in this folder is the original single-school design doc
 — useful for history, but some of it (e.g. the file layout section)

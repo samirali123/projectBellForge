@@ -12,47 +12,25 @@
 //   1. Launch Edge with --remote-debugging-port=9222 and log into that
 //      school's CyberData manually (same as for bells.js).
 //   2. node inspect.js
-//   3. Pick the school this browser session is logged into.
+//   3. Pick the school this browser session is logged into, and enter
+//      its password.
 //   4. In the Inspector window that opens, click "Pick locator", then click
 //      the New Event button, the dialog, and the Save button on the real
 //      page. Copy the suggested locator for each into that school's
 //      selectors.js.
 //   5. Close the Inspector window (or Ctrl+C here) when done.
 
-const readline = require("readline/promises");
+const { createInterface } = require("./readline-compat");
 const { stdin, stdout } = require("process");
-const { listSchools, loadSchool } = require("./school-loader");
-
-async function promptSchool(rl) {
-  const schools = listSchools();
-  if (schools.length === 0) {
-    throw new Error(
-      "No schools found in ../schools. Add a school folder (see schools/odea for the shape) first."
-    );
-  }
-
-  console.log("\nWhich school is this Edge session logged into?\n");
-  schools.forEach((s, i) => {
-    const num = String(i + 1).padStart(2, " ");
-    console.log(`${num}) ${s.name}`);
-  });
-
-  while (true) {
-    const answer = (await rl.question("\nSelection: ")).trim();
-    const idx = Number(answer) - 1;
-    if (Number.isInteger(idx) && idx >= 0 && idx < schools.length) {
-      return schools[idx].id;
-    }
-    console.log(`Please enter a number between 1 and ${schools.length}.`);
-  }
-}
+const { loadSchool } = require("./school-loader");
+const { selectSchool } = require("./school-selector");
 
 async function run() {
-  const rl = readline.createInterface({ input: stdin, output: stdout });
-  const schoolId = await promptSchool(rl);
+  const rl = createInterface({ input: stdin, output: stdout });
+  const schoolMeta = await selectSchool(rl);
   rl.close();
 
-  const { connect } = loadSchool(schoolId);
+  const { connect } = loadSchool(schoolMeta.id);
 
   console.log("\nAttaching to Edge...");
   const { page } = await connect();

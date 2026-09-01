@@ -7,9 +7,10 @@
 // school-loader.js hands it a school's schedules + a ready-to-use
 // connect()/createEvent() pair, and this file just orchestrates them.
 
-const readline = require("readline/promises");
+const { createInterface } = require("./readline-compat");
 const { stdin, stdout } = require("process");
-const { listSchools, loadSchool } = require("./school-loader");
+const { loadSchool } = require("./school-loader");
+const { selectSchool } = require("./school-selector");
 
 // Set once, right after the school is chosen, in run() — everything below
 // reads these via closure rather than importing one school's data directly.
@@ -54,30 +55,6 @@ function enumerateDates(startStr, endStr) {
     cur.setDate(cur.getDate() + 1);
   }
   return dates;
-}
-
-async function promptSchool(rl) {
-  const schools = listSchools();
-  if (schools.length === 0) {
-    throw new Error(
-      "No schools found in ../schools. Add a school folder (see schools/odea for the shape) first."
-    );
-  }
-
-  console.log("\nChoose School\n");
-  schools.forEach((s, i) => {
-    const num = String(i + 1).padStart(2, " ");
-    console.log(`${num}) ${s.name}`);
-  });
-
-  while (true) {
-    const answer = (await rl.question("\nSelection: ")).trim();
-    const idx = Number(answer) - 1;
-    if (Number.isInteger(idx) && idx >= 0 && idx < schools.length) {
-      return schools[idx].id;
-    }
-    console.log(`Please enter a number between 1 and ${schools.length}.`);
-  }
 }
 
 async function promptMode(rl) {
@@ -278,11 +255,11 @@ async function runRange(rl) {
 }
 
 async function run() {
-  const rl = readline.createInterface({ input: stdin, output: stdout });
+  const rl = createInterface({ input: stdin, output: stdout });
 
   try {
-    const schoolId = await promptSchool(rl);
-    const school = loadSchool(schoolId);
+    const schoolMeta = await selectSchool(rl);
+    const school = loadSchool(schoolMeta.id);
     schedules = school.schedules;
     MENU_ORDER = school.order;
     connect = school.connect;
