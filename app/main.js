@@ -75,12 +75,20 @@ function isPortOpen(host, port, timeoutMs) {
   });
 }
 
-async function waitForPort(host, port, retries, delayMs) {
+async function waitForPort(host, port, retries, delayMs, timeoutMs = 800) {
   for (let i = 0; i < retries; i++) {
-    if (await isPortOpen(host, port, 800)) return true;
+    if (await isPortOpen(host, port, timeoutMs)) return true;
     await sleep(delayMs);
   }
   return false;
+}
+
+// A single 2.5s check was producing false negatives — likely too tight a
+// timeout for a VPN's higher latency, and no retry meant one slow beat was
+// enough to wrongly report "unreachable". Retry with backoff instead (same
+// pattern as the CDP port wait above).
+function isSchoolReachable(config) {
+  return waitForPort(config.cyberDataHost, 443, 3, 1000, 1500);
 }
 
 // Force-quit any running Edge, then launch fresh with the debug flag — a
@@ -132,7 +140,7 @@ ipcMain.handle("check-reachable", async (event, { schoolId }) => {
   const school = listSchools().find((s) => s.id === schoolId);
   if (!school) return { reachable: false, error: "Unknown school." };
   const { config } = loadSchool(schoolId);
-  const reachable = await isPortOpen(config.cyberDataHost, 443, 2500);
+  const reachable = await isSchoolReachable(config);
   return { reachable, host: config.cyberDataHost };
 });
 
@@ -145,7 +153,7 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
     const { config, connect } = loadSchool(schoolId);
 
     sendStatus(`Checking whether ${config.cyberDataHost} is reachable...`);
-    const reachable = await isPortOpen(config.cyberDataHost, 443, 2500);
+    const reachable = await isSchoolReachable(config);
     if (!reachable) {
       throw new Error(
         `Can't reach ${config.cyberDataHost} — make sure you're on ${school.name}'s ` +
