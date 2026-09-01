@@ -1,5 +1,7 @@
 {
   "id": "odea",
   "name": "O'Dea High School",
-  "platform": "cyberdata"
+  "platform": "cyberdata",
+  "passwordSalt": "f9681b37772f73f62247e858ef55eee7",
+  "passwordHash": "0cbe0a6a6968ea459ba1e5e0a14132b272469026e49e8dae45bea2161fe11d219c9547189d39ebb1ba1204e905bb8f46885804fe7cf0b0dbd4501e424131191a"
 }
