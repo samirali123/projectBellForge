@@ -12,8 +12,13 @@ module.exports = {
   // Host CyberData is reached at (see ../../cyberdata_bells.sh). Used to
   // pick the right tab out of the attached Edge instance — CyberData is
   // reached by bare IP, not a hostname, so this can't be a "cyberdata.*"
-  // pattern.
+  // pattern. Only reachable when on this school's local network or VPN.
   cyberDataHost: "10.0.30.230",
+
+  // Full URL to this school's CyberData calendar — the app navigates
+  // Edge straight here after attaching, so the operator doesn't have to
+  // type the internal IP/calendar path by hand every time.
+  calendarUrl: "https://10.0.30.230/calendar/2026-27_Bells",
 
   // How long to wait, after the "New Event" dialog closes on Save, before
   // starting the next event. Gives CyberData's page time to refresh/register

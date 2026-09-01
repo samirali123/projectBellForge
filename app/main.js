@@ -1,0 +1,169 @@
+// main.js — Electron main process.
+//
+// This is the "home" that launches/attaches to Edge, replacing the manual
+// Bells.command dance with buttons. It's a thin shell around the same
+// engine/ code the CLI uses — school-loader.js, school-auth.js, and each
+// school's platform engine (connect()/createEvent()) are all reused
+// as-is, not reimplemented here.
+
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
+const os = require("os");
+const net = require("net");
+const { execFile, spawn } = require("child_process");
+
+const { listSchools, loadSchool } = require("../engine/school-loader");
+const { verifyPassword } = require("../engine/school-auth");
+
+const CDP_PORT = 9222;
+const EDGE_PROFILE = path.join(os.homedir(), "edge-cyberdata-debug");
+const PORT_WAIT_RETRIES = 10;
+const PORT_WAIT_DELAY_MS = 1000;
+
+let mainWindow;
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 480,
+    height: 680,
+    resizable: false,
+    title: "BellForge",
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
+}
+
+app.whenReady().then(createWindow);
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// --- helpers -----------------------------------------------------------
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function runCommand(cmd, args) {
+  return new Promise((resolve) => {
+    execFile(cmd, args, (err, stdout, stderr) => resolve({ err, stdout, stderr }));
+  });
+}
+
+function isPortOpen(host, port, timeoutMs) {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+    let done = false;
+    const finish = (result) => {
+      if (done) return;
+      done = true;
+      socket.destroy();
+      resolve(result);
+    };
+    socket.setTimeout(timeoutMs);
+    socket.once("connect", () => finish(true));
+    socket.once("timeout", () => finish(false));
+    socket.once("error", () => finish(false));
+    socket.connect(port, host);
+  });
+}
+
+async function waitForPort(host, port, retries, delayMs) {
+  for (let i = 0; i < retries; i++) {
+    if (await isPortOpen(host, port, 800)) return true;
+    await sleep(delayMs);
+  }
+  return false;
+}
+
+// Force-quit any running Edge, then launch fresh with the debug flag — a
+// browser only actually opens its debug port on a genuinely clean launch
+// (see Bells.command for the same logic/reasoning).
+async function relaunchEdgeWithDebugging(sendStatus) {
+  sendStatus("Quitting any running Edge window...");
+  await runCommand("osascript", ["-e", 'quit app "Microsoft Edge"']);
+  await sleep(1500);
+  await runCommand("pkill", ["-f", "Microsoft Edge"]);
+  await sleep(500);
+
+  sendStatus("Launching Edge with remote debugging...");
+  spawn(
+    "open",
+    [
+      "-a",
+      "Microsoft Edge",
+      "--args",
+      `--remote-debugging-port=${CDP_PORT}`,
+      `--user-data-dir=${EDGE_PROFILE}`,
+    ],
+    { detached: true, stdio: "ignore" }
+  ).unref();
+
+  const ok = await waitForPort("localhost", CDP_PORT, PORT_WAIT_RETRIES, PORT_WAIT_DELAY_MS);
+  if (!ok) {
+    throw new Error(`Edge still isn't listening on port ${CDP_PORT} after a clean relaunch.`);
+  }
+}
+
+// --- IPC handlers --------------------------------------------------------
+
+ipcMain.handle("list-schools", () => {
+  return listSchools().map((s) => ({ id: s.id, name: s.name }));
+});
+
+ipcMain.handle("check-password", (event, { schoolId, password }) => {
+  const school = listSchools().find((s) => s.id === schoolId);
+  if (!school) return { ok: false, error: "Unknown school." };
+  if (!school.passwordHash || !school.passwordSalt) {
+    return { ok: false, error: `${school.name} has no password set.` };
+  }
+  const ok = verifyPassword(password, school.passwordSalt, school.passwordHash);
+  return ok ? { ok: true } : { ok: false, error: "Incorrect password." };
+});
+
+ipcMain.handle("check-reachable", async (event, { schoolId }) => {
+  const school = listSchools().find((s) => s.id === schoolId);
+  if (!school) return { reachable: false, error: "Unknown school." };
+  const { config } = loadSchool(schoolId);
+  const reachable = await isPortOpen(config.cyberDataHost, 443, 2500);
+  return { reachable, host: config.cyberDataHost };
+});
+
+ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
+  const sendStatus = (text) => event.sender.send("status-update", text);
+
+  try {
+    const school = listSchools().find((s) => s.id === schoolId);
+    if (!school) throw new Error("Unknown school.");
+    const { config, connect } = loadSchool(schoolId);
+
+    sendStatus(`Checking whether ${config.cyberDataHost} is reachable...`);
+    const reachable = await isPortOpen(config.cyberDataHost, 443, 2500);
+    if (!reachable) {
+      throw new Error(
+        `Can't reach ${config.cyberDataHost} — make sure you're on ${school.name}'s ` +
+          `network or VPN, then try again.`
+      );
+    }
+
+    await relaunchEdgeWithDebugging(sendStatus);
+
+    sendStatus("Attaching to Edge...");
+    const { page } = await connect();
+
+    sendStatus("Opening CyberData...");
+    await page.goto(config.calendarUrl, { waitUntil: "domcontentloaded" });
+
+    sendStatus("Ready — log into CyberData in the Edge window, then continue there.");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});

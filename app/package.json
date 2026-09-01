@@ -1,0 +1,16 @@
+{
+  "name": "bellforge-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop launcher for the CyberData bell schedule automation",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}
