@@ -122,48 +122,56 @@ async function onConnectClick() {
   connectBtn.disabled = true;
   connectBtn.textContent = "Checking password…";
 
-  const passwordResult = await window.api.checkPassword(selectedSchoolId, password);
-  if (!passwordResult.ok) {
-    showConnectError(passwordResult.error);
-    connectBtn.disabled = false;
-    connectBtn.textContent = "Connect";
-    return;
+  // Wrapped in try/catch/finally so an unexpected rejection anywhere in
+  // this flow (a bug, a bad IPC response, anything) always leaves the UI
+  // in a recoverable state with a visible message — instead of silently
+  // stuck on "Connecting…" forever with no feedback at all, which is what
+  // was happening before this existed.
+  try {
+    const passwordResult = await window.api.checkPassword(selectedSchoolId, password);
+    if (!passwordResult.ok) {
+      showConnectError(passwordResult.error);
+      return;
+    }
+
+    connectBtn.textContent = "Connecting…";
+
+    if (unsubscribeStatus) unsubscribeStatus();
+    unsubscribeStatus = window.api.onStatus((text) => appendConnectLog(text));
+
+    const result = await window.api.launchAndConnect(selectedSchoolId);
+
+    if (unsubscribeStatus) {
+      unsubscribeStatus();
+      unsubscribeStatus = null;
+    }
+
+    if (!result.ok) {
+      showConnectError(result.error);
+      return;
+    }
+
+    appendConnectLog("Connected.", "success");
+    connectBtn.textContent = "Connected";
+
+    const menu = await window.api.getScheduleMenu();
+    if (!menu.ok) {
+      showConnectError(menu.error);
+      return;
+    }
+    scheduleMenu = menu;
+    subtitle.textContent = menu.schoolName;
+    populateScheduleSelect(document.getElementById("single-schedule"), false);
+
+    showScreen("screen-mode");
+  } catch (err) {
+    showConnectError(`Unexpected error: ${err.message}`);
+  } finally {
+    if (connectBtn.textContent !== "Connected") {
+      connectBtn.disabled = false;
+      connectBtn.textContent = "Connect";
+    }
   }
-
-  connectBtn.textContent = "Connecting…";
-
-  if (unsubscribeStatus) unsubscribeStatus();
-  unsubscribeStatus = window.api.onStatus((text) => appendConnectLog(text));
-
-  const result = await window.api.launchAndConnect(selectedSchoolId);
-
-  if (unsubscribeStatus) {
-    unsubscribeStatus();
-    unsubscribeStatus = null;
-  }
-
-  if (!result.ok) {
-    showConnectError(result.error);
-    connectBtn.disabled = false;
-    connectBtn.textContent = "Connect";
-    return;
-  }
-
-  appendConnectLog("Connected.", "success");
-  connectBtn.textContent = "Connected";
-
-  const menu = await window.api.getScheduleMenu();
-  if (!menu.ok) {
-    showConnectError(menu.error);
-    connectBtn.disabled = false;
-    connectBtn.textContent = "Connect";
-    return;
-  }
-  scheduleMenu = menu;
-  subtitle.textContent = menu.schoolName;
-  populateScheduleSelect(document.getElementById("single-schedule"), false);
-
-  showScreen("screen-mode");
 }
 
 // --- schedule select helper --------------------------------------------
@@ -394,5 +402,19 @@ document.getElementById("progress-done-btn").addEventListener("click", () => {
 
 schoolSelect.addEventListener("change", onSchoolChange);
 connectBtn.addEventListener("click", onConnectClick);
+
+// Last-resort safety net: an error anywhere that isn't already handled by
+// a local try/catch should never leave the UI silently stuck with no
+// feedback — surface it wherever the connect screen's error box is
+// visible, since that's the one place always present regardless of which
+// screen is showing.
+window.addEventListener("unhandledrejection", (e) => {
+  console.error(e.reason);
+  showConnectError(`Unexpected error: ${e.reason && e.reason.message ? e.reason.message : e.reason}`);
+});
+window.addEventListener("error", (e) => {
+  console.error(e.error);
+  showConnectError(`Unexpected error: ${e.message}`);
+});
 
 loadSchools();

@@ -45,13 +45,21 @@ function createEngine({ selectors, colors, config }) {
       throw new Error("Edge is running but has no open browser context/tabs.");
     }
 
+    // On a genuinely fresh launch (new profile, just force-relaunched),
+    // the CDP port can accept connections slightly before Edge has
+    // actually created its first tab — a real race, not hypothetical.
+    // Retry briefly instead of failing on the very first empty check.
+    let pages = context.pages();
+    for (let attempt = 0; pages.length === 0 && attempt < 10; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      pages = context.pages();
+    }
+
     // Prefer a tab that's already on this school's CyberData host; fall
     // back to the first tab. CyberData is typically reached by bare IP,
     // not a hostname, so this matches on config.cyberDataHost directly
     // rather than assuming a "cyberdata.*" pattern.
-    const pages = context.pages();
-    const page =
-      pages.find((p) => p.url().includes(config.cyberDataHost)) || pages[0];
+    const page = pages.find((p) => p.url().includes(config.cyberDataHost)) || pages[0];
 
     if (!page) {
       throw new Error("No open tabs found in the attached Edge instance.");
