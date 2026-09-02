@@ -14,6 +14,7 @@ const { execFile, spawn } = require("child_process");
 
 const { listSchools, loadSchool } = require("../engine/school-loader");
 const { verifyPassword } = require("../engine/school-auth");
+const { createEvents } = require("../engine/create-events");
 
 const CDP_PORT = 9222;
 const EDGE_PROFILE = path.join(os.homedir(), "edge-cyberdata-debug");
@@ -22,11 +23,18 @@ const PORT_WAIT_DELAY_MS = 1000;
 
 let mainWindow;
 
+// The connected school's live session — set once by launch-and-connect,
+// read by every screen after that (schedule menu, event creation). There's
+// only ever one active connection at a time, matching the CLI's model.
+let currentSession = null;
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 480,
     height: 680,
-    resizable: false,
+    minWidth: 420,
+    minHeight: 520,
+    resizable: true,
     title: "BellForge",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -150,7 +158,8 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
   try {
     const school = listSchools().find((s) => s.id === schoolId);
     if (!school) throw new Error("Unknown school.");
-    const { config, connect } = loadSchool(schoolId);
+    const loaded = loadSchool(schoolId);
+    const { config, connect } = loaded;
 
     sendStatus(`Checking whether ${config.cyberDataHost} is reachable...`);
     const reachable = await isSchoolReachable(config);
@@ -169,8 +178,49 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
     sendStatus("Opening CyberData...");
     await page.goto(config.calendarUrl, { waitUntil: "domcontentloaded" });
 
+    currentSession = {
+      schoolId,
+      schoolName: school.name,
+      page,
+      order: loaded.order,
+      schedules: loaded.schedules,
+      createEvent: loaded.createEvent,
+    };
+
     sendStatus("Ready — log into CyberData in the Edge window, then continue there.");
     return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle("get-schedule-menu", () => {
+  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+  const items = currentSession.order.map((key) => ({
+    key,
+    label: currentSession.schedules[key].label,
+    eventCount: currentSession.schedules[key].events.length,
+  }));
+  return { ok: true, schoolName: currentSession.schoolName, items };
+});
+
+ipcMain.handle("create-events", async (event, { assignments }) => {
+  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+  if (!Array.isArray(assignments) || assignments.length === 0) {
+    return { ok: false, error: "Nothing to create." };
+  }
+
+  const sendProgress = (p) => event.sender.send("create-progress", p);
+
+  try {
+    const { succeeded, totalEvents, haltedOn } = await createEvents({
+      page: currentSession.page,
+      schedules: currentSession.schedules,
+      createEvent: currentSession.createEvent,
+      assignments,
+      onProgress: sendProgress,
+    });
+    return { ok: !haltedOn, succeeded, totalEvents, haltedOn };
   } catch (err) {
     return { ok: false, error: err.message };
   }

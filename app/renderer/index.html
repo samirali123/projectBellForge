@@ -9,31 +9,102 @@
   <main class="card">
     <header>
       <h1>BellForge</h1>
-      <p class="subtitle">CyberData bell schedule automation</p>
+      <p id="subtitle" class="subtitle">CyberData bell schedule automation</p>
     </header>
 
-    <label class="field">
-      <span>School</span>
-      <select id="school-select">
-        <option value="" disabled selected>Loading schools…</option>
-      </select>
-    </label>
+    <!-- Screen 1: connect -->
+    <section id="screen-connect" class="screen">
+      <label class="field">
+        <span>School</span>
+        <select id="school-select">
+          <option value="" disabled selected>Loading schools…</option>
+        </select>
+      </label>
 
-    <div id="network-status" class="network-status" hidden>
-      <span class="dot"></span>
-      <span class="network-text"></span>
-    </div>
+      <div id="network-status" class="network-status" hidden>
+        <span class="dot"></span>
+        <span class="network-text"></span>
+      </div>
 
-    <label class="field">
-      <span>Password</span>
-      <input id="password" type="password" autocomplete="off" placeholder="School password" />
-    </label>
+      <label class="field">
+        <span>Password</span>
+        <input id="password" type="password" autocomplete="off" placeholder="School password" />
+      </label>
 
-    <button id="connect-btn" disabled>Connect</button>
+      <button id="connect-btn" disabled>Connect</button>
 
-    <div id="error" class="error" hidden></div>
+      <div id="connect-error" class="error" hidden></div>
+      <div id="connect-log" class="log" hidden></div>
+    </section>
 
-    <div id="log" class="log" hidden></div>
+    <!-- Screen 2: mode -->
+    <section id="screen-mode" class="screen" hidden>
+      <p class="section-label">What do you want to schedule?</p>
+      <div class="mode-grid">
+        <button id="mode-single" class="mode-btn">
+          <span class="mode-title">Single day</span>
+          <span class="mode-desc">One date, one schedule type</span>
+        </button>
+        <button id="mode-range" class="mode-btn">
+          <span class="mode-title">Date range</span>
+          <span class="mode-desc">Assign a schedule to every date in a range</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Screen 3: single day -->
+    <section id="screen-single" class="screen" hidden>
+      <button class="back-link" data-back="screen-mode">&larr; Back</button>
+      <label class="field">
+        <span>Date</span>
+        <input id="single-date" type="date" />
+      </label>
+      <label class="field">
+        <span>Schedule</span>
+        <select id="single-schedule"></select>
+      </label>
+      <button id="single-review-btn">Review</button>
+    </section>
+
+    <!-- Screen 4: date range -->
+    <section id="screen-range" class="screen" hidden>
+      <button class="back-link" data-back="screen-mode">&larr; Back</button>
+      <div class="range-dates">
+        <label class="field">
+          <span>Start date</span>
+          <input id="range-start" type="date" />
+        </label>
+        <label class="field">
+          <span>End date</span>
+          <input id="range-end" type="date" />
+        </label>
+      </div>
+      <button id="range-generate-btn">Generate dates</button>
+
+      <div id="range-table-wrap" class="range-table-wrap" hidden>
+        <table id="range-table" class="range-table">
+          <tbody></tbody>
+        </table>
+        <button id="range-review-btn">Review</button>
+      </div>
+    </section>
+
+    <!-- Screen 5: review -->
+    <section id="screen-review" class="screen" hidden>
+      <button class="back-link" id="review-back">&larr; Back</button>
+      <p class="section-label">You are about to create</p>
+      <div id="review-list" class="review-list"></div>
+      <p id="review-total" class="review-total"></p>
+      <button id="review-confirm-btn">Create Events</button>
+    </section>
+
+    <!-- Screen 6: progress -->
+    <section id="screen-progress" class="screen" hidden>
+      <p class="section-label" id="progress-heading">Creating events…</p>
+      <div id="progress-log" class="log progress-log"></div>
+      <div id="progress-summary" class="progress-summary" hidden></div>
+      <button id="progress-done-btn" hidden>Done — start over</button>
+    </section>
   </main>
 
   <script src="renderer.js"></script>

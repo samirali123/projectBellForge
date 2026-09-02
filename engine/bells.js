@@ -11,6 +11,7 @@ const { createInterface } = require("./readline-compat");
 const { stdin, stdout } = require("process");
 const { loadSchool } = require("./school-loader");
 const { selectSchool } = require("./school-selector");
+const { createEvents } = require("./create-events");
 
 // Set once, right after the school is chosen, in run() — everything below
 // reads these via closure rather than importing one school's data directly.
@@ -168,37 +169,25 @@ async function runAssignments(assignments) {
   console.log("Connected. Starting run.\n");
 
   const multiDate = assignments.length > 1;
-  const totalEvents = assignments.reduce(
-    (sum, a) => sum + schedules[a.scheduleKey].events.length,
-    0
-  );
 
-  let succeeded = 0;
-  let overallIndex = 0;
-  let haltedOn = null;
-
-  for (const { date, scheduleKey } of assignments) {
-    const schedule = schedules[scheduleKey];
-    if (multiDate) console.log(`\n=== ${date} — ${schedule.label} ===`);
-
-    for (let i = 0; i < schedule.events.length; i++) {
-      const event = schedule.events[i];
-      overallIndex += 1;
-      const overallSuffix = multiDate ? ` (${overallIndex}/${totalEvents} overall)` : "";
-      console.log(
-        `Creating event ${i + 1}/${schedule.events.length}${overallSuffix}: ${event.title} @ ${event.start}`
-      );
-      try {
-        await createEvent(page, event, date);
-        succeeded += 1;
-      } catch (err) {
-        console.error(`  FAILED: ${err.message}`);
-        haltedOn = `${date} ${event.title}`;
-        break;
+  const { succeeded, totalEvents, haltedOn } = await createEvents({
+    page,
+    schedules,
+    createEvent,
+    assignments,
+    onProgress: (p) => {
+      if (p.type === "date-start") {
+        console.log(`\n=== ${p.date} — ${p.label} ===`);
+      } else if (p.type === "event-start") {
+        const overallSuffix = multiDate ? ` (${p.overallIndex}/${p.totalEvents} overall)` : "";
+        console.log(
+          `Creating event ${p.index}/${p.countForDate}${overallSuffix}: ${p.event.title} @ ${p.event.start}`
+        );
+      } else if (p.type === "event-fail") {
+        console.error(`  FAILED: ${p.error}`);
       }
-    }
-    if (haltedOn) break;
-  }
+    },
+  });
 
   console.log("\n--- Summary ---");
   console.log(`Succeeded: ${succeeded}/${totalEvents}`);
