@@ -103,6 +103,24 @@ failure — it never silently skips a date or an event.
 
 ---
 
+## Installing the packaged app
+
+BellForge is also distributed as a plain installer (`.exe` on Windows,
+`.dmg` on Mac) built from `app/` via electron-builder — no `npm install`
+or terminal needed for that version. It's unsigned for now, so the OS
+will flag it on first launch:
+
+- **Windows**: SmartScreen shows "Windows protected your PC." Click
+  "More info," then "Run anyway."
+- **Mac**: Gatekeeper blocks the first open. Right-click (or Control-click)
+  the app and choose "Open," then confirm in the dialog that appears. After
+  that first approval, it opens normally.
+
+The packaged app still needs Microsoft Edge installed on the machine — see
+"Why Edge, not Chrome" below.
+
+---
+
 ## Why Edge, not Chrome
 
 Playwright's CDP attach (`chromium.connectOverCDP`) works with any
