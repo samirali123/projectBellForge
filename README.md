@@ -46,14 +46,12 @@ Clone the repo and install dependencies:
 ```bash
 git clone <this-repo-url>
 cd CyberDataAutomation
-npm install
+cd engine && npm install && cd ..
 ```
 
-`npm install` pulls in the `playwright` package (used only for its Node
-API to drive an already-running browser — nothing here launches Playwright's
-own bundled browser). The install may download some browser binaries as a
-side effect of installing the `playwright` package; that's harmless and
-unused by this tool, just slower/bigger than strictly necessary.
+The `engine/` folder installs its own dependencies (`playwright-core`, used
+only for its Node API to attach to an already-running browser — nothing
+here launches its own bundled browser).
 
 ---
 

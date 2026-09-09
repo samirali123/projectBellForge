@@ -16,7 +16,7 @@
 // school-loader.js is the only thing that should call createEngine();
 // bells.js and inspect.js go through that, not this file directly.
 
-const { chromium } = require("playwright");
+const { chromium } = require("playwright-core");
 
 function createEngine({ selectors, colors, config }) {
   function dialogLocator(page) {
