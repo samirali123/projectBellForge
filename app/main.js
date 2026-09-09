@@ -9,12 +9,22 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const os = require("os");
+const fs = require("fs");
 const net = require("net");
 const { execFile, spawn } = require("child_process");
 
-const { listSchools, loadSchool } = require("../engine/school-loader");
-const { verifyPassword } = require("../engine/school-auth");
-const { createEvents } = require("../engine/create-events");
+// engine/ and schools/ live at the repo root, not under app/. In dev
+// they're found via ../engine relative to this file; a packaged build
+// copies them into resources/ instead (see app/package.json "build" ->
+// extraResources), so resolve based on app.isPackaged.
+function resourcePath(...parts) {
+  const base = app.isPackaged ? process.resourcesPath : path.join(__dirname, "..");
+  return path.join(base, ...parts);
+}
+
+const { listSchools, loadSchool } = require(resourcePath("engine", "school-loader"));
+const { verifyPassword } = require(resourcePath("engine", "school-auth"));
+const { createEvents } = require(resourcePath("engine", "create-events"));
 
 const CDP_PORT = 9222;
 const EDGE_PROFILE = path.join(os.homedir(), "edge-cyberdata-debug");
@@ -99,9 +109,33 @@ function isSchoolReachable(config) {
   return waitForPort(config.cyberDataHost, 443, 3, 1000, 1500);
 }
 
+// Windows install locations for msedge.exe, checked before falling back
+// to the registry App Paths key — Edge usually isn't on PATH by default.
+const WIN_EDGE_PATHS = [
+  path.join(process.env["ProgramFiles(x86)"] || "", "Microsoft", "Edge", "Application", "msedge.exe"),
+  path.join(process.env["ProgramFiles"] || "", "Microsoft", "Edge", "Application", "msedge.exe"),
+  path.join(process.env["LocalAppData"] || "", "Microsoft", "Edge", "Application", "msedge.exe"),
+];
+
+async function findWindowsEdgePath() {
+  for (const candidate of WIN_EDGE_PATHS) {
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  }
+
+  const { stdout } = await runCommand("reg", [
+    "query",
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\msedge.exe",
+    "/ve",
+  ]);
+  const match = stdout && stdout.match(/REG_SZ\s+(.+)$/m);
+  if (match) return match[1].trim();
+
+  throw new Error("Couldn't find msedge.exe. Make sure Microsoft Edge is installed.");
+}
+
 // Force-quit any running Edge, then launch fresh with the debug flag — a
 // browser only actually opens its debug port on a genuinely clean launch
-// (see Bells.command for the same logic/reasoning).
+// (see Bells.command for the same logic/reasoning on macOS).
 //
 // targetUrl is passed as a launch argument so Edge opens directly on the
 // school's IP, instead of opening blank and relying on a post-attach
@@ -109,25 +143,30 @@ function isSchoolReachable(config) {
 // Playwright/CDP can't type into it — so a launch-time URL argument is the
 // only way to land there without a human pasting it in by hand.
 async function relaunchEdgeWithDebugging(sendStatus, targetUrl) {
-  sendStatus("Quitting any running Edge window...");
-  await runCommand("osascript", ["-e", 'quit app "Microsoft Edge"']);
-  await sleep(1500);
-  await runCommand("pkill", ["-f", "Microsoft Edge"]);
-  await sleep(500);
+  const edgeArgs = [`--remote-debugging-port=${CDP_PORT}`, `--user-data-dir=${EDGE_PROFILE}`, targetUrl];
 
-  sendStatus("Launching Edge with remote debugging...");
-  spawn(
-    "open",
-    [
-      "-a",
-      "Microsoft Edge",
-      "--args",
-      `--remote-debugging-port=${CDP_PORT}`,
-      `--user-data-dir=${EDGE_PROFILE}`,
-      targetUrl,
-    ],
-    { detached: true, stdio: "ignore" }
-  ).unref();
+  sendStatus("Quitting any running Edge window...");
+  if (process.platform === "darwin") {
+    await runCommand("osascript", ["-e", 'quit app "Microsoft Edge"']);
+    await sleep(1500);
+    await runCommand("pkill", ["-f", "Microsoft Edge"]);
+    await sleep(500);
+
+    sendStatus("Launching Edge with remote debugging...");
+    spawn("open", ["-a", "Microsoft Edge", "--args", ...edgeArgs], {
+      detached: true,
+      stdio: "ignore",
+    }).unref();
+  } else if (process.platform === "win32") {
+    await runCommand("taskkill", ["/IM", "msedge.exe", "/F"]);
+    await sleep(1000);
+
+    const edgePath = await findWindowsEdgePath();
+    sendStatus("Launching Edge with remote debugging...");
+    spawn(edgePath, edgeArgs, { detached: true, stdio: "ignore" }).unref();
+  } else {
+    throw new Error(`Unsupported platform: ${process.platform}. BellForge only runs on macOS and Windows.`);
+  }
 
   const ok = await waitForPort("localhost", CDP_PORT, PORT_WAIT_RETRIES, PORT_WAIT_DELAY_MS);
   if (!ok) {
