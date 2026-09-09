@@ -50,6 +50,18 @@ function buildEvents(blocks) {
         : { title: "Pass", start: block.end, color: "Grey", details: "Passing Period" }
     );
   });
+
+  // Every title (the short code CyberData actually displays) must be at
+  // least 2 characters — a 1-character title isn't a valid selection on
+  // the live page. No upper limit; this is a minimum, not an exact size.
+  for (const event of events) {
+    if (event.title.length < 2) {
+      throw new Error(
+        `Event title must be at least 2 characters, got "${event.title}" (${event.title.length})`
+      );
+    }
+  }
+
   return events;
 }
 
@@ -335,10 +347,24 @@ const schedules = {
         { title: "M2", start: "19:25", end: "19:32", color: "Maroon", details: "Maroon 2" },
         { title: "M3", start: "19:36", end: "19:43", color: "Maroon", details: "Maroon 3" },
         { title: "M4", start: "19:47", end: "19:54", color: "Maroon", details: "Maroon 4" },
-        { title: "Z", start: "19:58", end: "20:05", color: "Maroon", details: "Zero Period" },
+        { title: "ZP", start: "19:58", end: "20:05", color: "Maroon", details: "Zero Period" },
       ]),
     ],
   },
 };
+
+// Belt-and-suspenders on top of buildEvents()'s own check: covers
+// standalone events declared outside buildEvents() too (e.g. Back-to-
+// School Night's point triggers), so the minimum-2-characters rule holds
+// for every event in every schedule, no exceptions.
+for (const [key, schedule] of Object.entries(schedules)) {
+  for (const event of schedule.events) {
+    if (event.title.length < 2) {
+      throw new Error(
+        `schedules.${key}: event title must be at least 2 characters, got "${event.title}" (${event.title.length})`
+      );
+    }
+  }
+}
 
 module.exports = { order, schedules };
