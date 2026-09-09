@@ -203,6 +203,10 @@ button:disabled {
   gap: 14px;
 }
 
+.screen[hidden] {
+  display: none;
+}
+
 .section-label {
   font-size: 13px;
   font-weight: 600;

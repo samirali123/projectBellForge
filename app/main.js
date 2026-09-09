@@ -102,7 +102,13 @@ function isSchoolReachable(config) {
 // Force-quit any running Edge, then launch fresh with the debug flag — a
 // browser only actually opens its debug port on a genuinely clean launch
 // (see Bells.command for the same logic/reasoning).
-async function relaunchEdgeWithDebugging(sendStatus) {
+//
+// targetUrl is passed as a launch argument so Edge opens directly on the
+// school's IP, instead of opening blank and relying on a post-attach
+// page.goto(). The omnibox is native browser chrome outside the page DOM —
+// Playwright/CDP can't type into it — so a launch-time URL argument is the
+// only way to land there without a human pasting it in by hand.
+async function relaunchEdgeWithDebugging(sendStatus, targetUrl) {
   sendStatus("Quitting any running Edge window...");
   await runCommand("osascript", ["-e", 'quit app "Microsoft Edge"']);
   await sleep(1500);
@@ -118,6 +124,7 @@ async function relaunchEdgeWithDebugging(sendStatus) {
       "--args",
       `--remote-debugging-port=${CDP_PORT}`,
       `--user-data-dir=${EDGE_PROFILE}`,
+      targetUrl,
     ],
     { detached: true, stdio: "ignore" }
   ).unref();
@@ -170,11 +177,14 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
       );
     }
 
-    await relaunchEdgeWithDebugging(sendStatus);
+    await relaunchEdgeWithDebugging(sendStatus, config.calendarUrl);
 
     sendStatus("Attaching to Edge...");
     const { page } = await connect();
 
+    // Belt-and-suspenders: Edge was already launched pointed at
+    // calendarUrl, so this is normally a no-op. Kept as a fallback in
+    // case the launch-argument URL didn't take for some reason.
     sendStatus("Opening CyberData...");
     await page.goto(config.calendarUrl, { waitUntil: "domcontentloaded" });
 

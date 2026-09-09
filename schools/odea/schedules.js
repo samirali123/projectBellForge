@@ -19,11 +19,12 @@
 // --- Where these times came from --------------------------------------
 // Bell-time table for the original 14 schedule types transcribed from
 // O'Dea's public "Bell Schedule" page (Student Life > Bell Schedule), plus
-// 3 Finals schedules added later from O'Dea's Finals-week slides. Maroon
-// Day, Gold Day, and Maroon 1-Hour Late Start were additionally
-// cross-checked against cyberdata_bells.sh, which encodes times already
-// confirmed against real hand-entered CyberData events for Aug 31 /
-// Sept 1-4, 2026 — those three match exactly.
+// 3 Finals schedules added later from O'Dea's Finals-week slides, plus
+// Back-to-School Night from that event's flyer. Maroon Day, Gold Day, and
+// Maroon 1-Hour Late Start were additionally cross-checked against
+// cyberdata_bells.sh, which encodes times already confirmed against real
+// hand-entered CyberData events for Aug 31 / Sept 1-4, 2026 — those three
+// match exactly.
 //
 // --- Pattern -------------------------------------------------------
 // Every schedule is a straight-through sequence of class blocks. Between
@@ -76,6 +77,7 @@ const order = [
   "maroon12Finals",
   "maroon34Finals",
   "goldFinals",
+  "backToSchoolNight",
 ];
 
 const schedules = {
@@ -301,6 +303,44 @@ const schedules = {
       { title: "G3F", start: "11:50", end: "13:20", color: "Gold", details: "Gold 3 Final" },
       { title: "SRC", start: "13:25", end: "15:00", color: "Gold", details: "SRC Open Study Hall" },
     ]),
+  },
+
+  // ----------------------------------------------------------- SPECIAL --
+  // Transcribed from the "Back-to-School Night" flyer (dated 2025 there,
+  // but this is a selectable schedule type — the operator picks whatever
+  // this year's actual date is when running it, same as every other
+  // schedule here).
+  //
+  // Shape is different from the class-day schedules above: the first two
+  // rows (Senior Family Night, Principal's Welcome) are standalone
+  // announcements with no duration/end time on the flyer, so they're
+  // plain point triggers, not buildEvents() blocks. Mentor Group through
+  // Zero Period DO have real start/end times with passing-period-style
+  // gaps between them, so that portion reuses buildEvents() normally.
+  //
+  // NOTE: the flyer doesn't specify colors for anything (it's a plain
+  // text table, no color-coding). Mentor Group and Zero Period aren't
+  // clearly Maroon- or Gold-specific here (this is a mixed-house family
+  // night, not a normal class day), so they're left Grey as a neutral
+  // guess — confirm against the live color picker (or ask the school)
+  // before a real run, same caveat as Unified Day's Prayer Service.
+  backToSchoolNight: {
+    label: "Back-to-School Night",
+    events: [
+      { title: "SFN", start: "17:30", color: "Grey", details: "Senior Family Night (SRC)" },
+      { title: "Welcome", start: "18:00", color: "Grey", details: "Principal's Welcome (Gym)" },
+      ...buildEvents([
+        { title: "MG", start: "18:30", end: "18:37", color: "Grey", details: "Mentor Group" },
+        { title: "G1", start: "18:41", end: "18:48", color: "Gold", details: "Gold 1" },
+        { title: "G2", start: "18:52", end: "18:59", color: "Gold", details: "Gold 2" },
+        { title: "G3", start: "19:03", end: "19:10", color: "Gold", details: "Gold 3" },
+        { title: "M1", start: "19:14", end: "19:21", color: "Maroon", details: "Maroon 1" },
+        { title: "M2", start: "19:25", end: "19:32", color: "Maroon", details: "Maroon 2" },
+        { title: "M3", start: "19:36", end: "19:43", color: "Maroon", details: "Maroon 3" },
+        { title: "M4", start: "19:47", end: "19:54", color: "Maroon", details: "Maroon 4" },
+        { title: "Z", start: "19:58", end: "20:05", color: "Grey", details: "Zero Period" },
+      ]),
+    ],
   },
 };
 
