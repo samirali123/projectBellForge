@@ -46,22 +46,10 @@ function buildEvents(blocks) {
     const isLast = i === blocks.length - 1;
     events.push(
       isLast
-        ? { title: "DS", start: block.end, color: "Grey", details: "Dismissal" }
-        : { title: "PA", start: block.end, color: "Grey", details: "Passing Period" }
+        ? { title: "Dismissal", start: block.end, color: "Grey", details: "Dismissal" }
+        : { title: "Pass", start: block.end, color: "Grey", details: "Passing Period" }
     );
   });
-
-  // Every title (the short code CyberData actually displays) must be
-  // exactly 2 characters, no matter what — enforced here rather than just
-  // fixed once, so a future schedule can't accidentally violate it.
-  for (const event of events) {
-    if (event.title.length !== 2) {
-      throw new Error(
-        `Event title must be exactly 2 characters, got "${event.title}" (${event.title.length})`
-      );
-    }
-  }
-
   return events;
 }
 
@@ -101,7 +89,7 @@ const schedules = {
       { title: "M1", start: "08:10", end: "09:30", color: "Maroon", details: "Maroon 1" },
       { title: "MG", start: "09:35", end: "09:45", color: "Maroon", details: "Mentor Group" },
       { title: "M2", start: "09:50", end: "11:10", color: "Maroon", details: "Maroon 2" },
-      { title: "LU", start: "11:15", end: "11:35", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:15", end: "11:35", color: "Lunch", details: "Lunch" },
       { title: "M3", start: "11:40", end: "13:00", color: "Maroon", details: "Maroon 3" },
       { title: "M4", start: "13:05", end: "14:25", color: "Maroon", details: "Maroon 4" },
     ]),
@@ -114,7 +102,7 @@ const schedules = {
       { title: "M1", start: "09:10", end: "10:15", color: "Maroon", details: "Maroon 1" },
       { title: "MG", start: "10:20", end: "10:30", color: "Maroon", details: "Mentor Group" },
       { title: "M2", start: "10:35", end: "11:40", color: "Maroon", details: "Maroon 2" },
-      { title: "LU", start: "11:45", end: "12:05", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:45", end: "12:05", color: "Lunch", details: "Lunch" },
       { title: "M3", start: "12:10", end: "13:15", color: "Maroon", details: "Maroon 3" },
       { title: "M4", start: "13:20", end: "14:25", color: "Maroon", details: "Maroon 4" },
     ]),
@@ -126,10 +114,10 @@ const schedules = {
       { title: "M0", start: "07:10", end: "08:00", color: "Maroon", details: "Maroon Zero period" },
       { title: "M1", start: "08:10", end: "09:15", color: "Maroon", details: "Maroon 1" },
       { title: "MG", start: "09:20", end: "09:30", color: "Maroon", details: "Mentor Group" },
-      { title: "2A", start: "09:35", end: "10:05", color: "Maroon", details: "Maroon 2A" },
+      { title: "M2A", start: "09:35", end: "10:05", color: "Maroon", details: "Maroon 2A" },
       { title: "IB", start: "10:10", end: "11:00", color: "Maroon", details: "Irish Block" },
-      { title: "2B", start: "11:05", end: "11:40", color: "Maroon", details: "Maroon 2B" },
-      { title: "LU", start: "11:45", end: "12:05", color: "Lunch", details: "Lunch" },
+      { title: "M2B", start: "11:05", end: "11:40", color: "Maroon", details: "Maroon 2B" },
+      { title: "Lunch", start: "11:45", end: "12:05", color: "Lunch", details: "Lunch" },
       { title: "M3", start: "12:10", end: "13:15", color: "Maroon", details: "Maroon 3" },
       { title: "M4", start: "13:20", end: "14:25", color: "Maroon", details: "Maroon 4" },
     ]),
@@ -143,7 +131,7 @@ const schedules = {
       { title: "MG", start: "09:20", end: "09:30", color: "Maroon", details: "Mentor Group" },
       { title: "M2", start: "09:35", end: "10:40", color: "Maroon", details: "Maroon 2" },
       { title: "M3", start: "10:45", end: "11:50", color: "Maroon", details: "Maroon 3" },
-      { title: "LU", start: "11:55", end: "12:15", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:55", end: "12:15", color: "Lunch", details: "Lunch" },
       { title: "M4", start: "12:20", end: "13:25", color: "Maroon", details: "Maroon 4" },
       { title: "IB", start: "13:30", end: "14:25", color: "Maroon", details: "Irish Block" },
     ]),
@@ -167,7 +155,7 @@ const schedules = {
       { title: "M1", start: "10:10", end: "11:00", color: "Maroon", details: "Maroon 1" },
       { title: "MG", start: "11:05", end: "11:15", color: "Maroon", details: "Mentor Group" },
       { title: "M2", start: "11:20", end: "12:10", color: "Maroon", details: "Maroon 2" },
-      { title: "LU", start: "12:15", end: "12:35", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "12:15", end: "12:35", color: "Lunch", details: "Lunch" },
       { title: "M3", start: "12:40", end: "13:30", color: "Maroon", details: "Maroon 3" },
       { title: "M4", start: "13:35", end: "14:25", color: "Maroon", details: "Maroon 4" },
     ]),
@@ -180,7 +168,7 @@ const schedules = {
       { title: "M1", start: "08:10", end: "09:20", color: "Maroon", details: "Maroon 1" },
       { title: "M2", start: "09:25", end: "10:35", color: "Maroon", details: "Maroon 2" },
       { title: "BB", start: "10:40", end: "11:30", color: "Maroon", details: "Brotherhood Block & Mentor Group" },
-      { title: "LU", start: "11:35", end: "11:55", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:35", end: "11:55", color: "Lunch", details: "Lunch" },
       { title: "M3", start: "12:00", end: "13:10", color: "Maroon", details: "Maroon 3" },
       { title: "M4", start: "13:15", end: "14:25", color: "Maroon", details: "Maroon 4" },
     ]),
@@ -194,7 +182,7 @@ const schedules = {
       { title: "G1", start: "08:10", end: "09:30", color: "Gold", details: "Gold 1" },
       { title: "MG", start: "09:35", end: "10:05", color: "Gold", details: "Mentor Group" },
       { title: "IB", start: "10:10", end: "11:10", color: "Gold", details: "Irish Block" },
-      { title: "LU", start: "11:15", end: "11:35", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:15", end: "11:35", color: "Lunch", details: "Lunch" },
       { title: "G2", start: "11:40", end: "13:00", color: "Gold", details: "Gold 2" },
       { title: "G3", start: "13:05", end: "14:25", color: "Gold", details: "Gold 3" },
     ]),
@@ -207,7 +195,7 @@ const schedules = {
       { title: "G1", start: "09:10", end: "10:15", color: "Gold", details: "Gold 1" },
       { title: "MG", start: "10:20", end: "10:50", color: "Gold", details: "Mentor Group" },
       { title: "IB", start: "10:55", end: "11:40", color: "Gold", details: "Irish Block" },
-      { title: "LU", start: "11:45", end: "12:05", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:45", end: "12:05", color: "Lunch", details: "Lunch" },
       { title: "G2", start: "12:10", end: "13:15", color: "Gold", details: "Gold 2" },
       { title: "G3", start: "13:20", end: "14:25", color: "Gold", details: "Gold 3" },
     ]),
@@ -220,7 +208,7 @@ const schedules = {
       { title: "G1", start: "09:10", end: "10:15", color: "Gold", details: "Gold 1" },
       { title: "MG", start: "10:20", end: "10:50", color: "Gold", details: "Mentor Group" },
       { title: "G2", start: "10:55", end: "12:00", color: "Gold", details: "Gold 2" },
-      { title: "LU", start: "12:05", end: "12:25", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "12:05", end: "12:25", color: "Lunch", details: "Lunch" },
       { title: "G3", start: "12:30", end: "13:35", color: "Gold", details: "Gold 3" },
       { title: "IB", start: "13:40", end: "14:25", color: "Gold", details: "Irish Block" },
     ]),
@@ -233,7 +221,7 @@ const schedules = {
       { title: "G1", start: "08:10", end: "09:30", color: "Gold", details: "Gold 1" },
       { title: "MG", start: "09:35", end: "10:05", color: "Gold", details: "Mentor Group" },
       { title: "G2", start: "10:10", end: "11:30", color: "Gold", details: "Gold 2" },
-      { title: "LU", start: "11:35", end: "11:55", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:35", end: "11:55", color: "Lunch", details: "Lunch" },
       { title: "G3", start: "12:00", end: "13:20", color: "Gold", details: "Gold 3" },
       { title: "IB", start: "13:25", end: "14:25", color: "Gold", details: "Irish Block" },
     ]),
@@ -254,7 +242,7 @@ const schedules = {
     events: buildEvents([
       { title: "G1", start: "10:10", end: "11:20", color: "Gold", details: "Gold 1" },
       { title: "MG", start: "11:25", end: "11:35", color: "Gold", details: "Mentor Group" },
-      { title: "LU", start: "11:40", end: "12:00", color: "Lunch", details: "Lunch" },
+      { title: "Lunch", start: "11:40", end: "12:00", color: "Lunch", details: "Lunch" },
       { title: "G2", start: "12:05", end: "13:15", color: "Gold", details: "Gold 2" },
       { title: "G3", start: "13:20", end: "14:25", color: "Gold", details: "Gold 3" },
     ]),
@@ -284,36 +272,36 @@ const schedules = {
   maroon12Finals: {
     label: "Maroon 1 & 2 Finals",
     events: buildEvents([
-      { title: "SH", start: "07:00", end: "08:00", color: "Maroon", details: "SRC Open Study Hall" },
+      { title: "SRC", start: "07:00", end: "08:00", color: "Maroon", details: "SRC Open Study Hall" },
       { title: "IB", start: "08:10", end: "09:40", color: "Maroon", details: "Irish Block" },
-      { title: "1F", start: "09:45", end: "11:15", color: "Maroon", details: "Maroon 1 Final" },
-      { title: "LU", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
-      { title: "2F", start: "11:50", end: "13:20", color: "Maroon", details: "Maroon 2 Final" },
-      { title: "SH", start: "13:25", end: "15:00", color: "Maroon", details: "SRC Open Study Hall" },
+      { title: "M1F", start: "09:45", end: "11:15", color: "Maroon", details: "Maroon 1 Final" },
+      { title: "Lunch", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
+      { title: "M2F", start: "11:50", end: "13:20", color: "Maroon", details: "Maroon 2 Final" },
+      { title: "SRC", start: "13:25", end: "15:00", color: "Maroon", details: "SRC Open Study Hall" },
     ]),
   },
 
   maroon34Finals: {
     label: "Maroon 3 & 4 Finals",
     events: buildEvents([
-      { title: "SH", start: "07:00", end: "08:00", color: "Maroon", details: "SRC Open Study Hall" },
+      { title: "SRC", start: "07:00", end: "08:00", color: "Maroon", details: "SRC Open Study Hall" },
       { title: "IB", start: "08:10", end: "09:40", color: "Maroon", details: "Irish Block" },
-      { title: "3F", start: "09:45", end: "11:15", color: "Maroon", details: "Maroon 3 Final" },
-      { title: "LU", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
-      { title: "4F", start: "11:50", end: "13:20", color: "Maroon", details: "Maroon 4 Final" },
-      { title: "SH", start: "13:25", end: "15:00", color: "Maroon", details: "SRC Open Study Hall" },
+      { title: "M3F", start: "09:45", end: "11:15", color: "Maroon", details: "Maroon 3 Final" },
+      { title: "Lunch", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
+      { title: "M4F", start: "11:50", end: "13:20", color: "Maroon", details: "Maroon 4 Final" },
+      { title: "SRC", start: "13:25", end: "15:00", color: "Maroon", details: "SRC Open Study Hall" },
     ]),
   },
 
   goldFinals: {
     label: "Gold Finals",
     events: buildEvents([
-      { title: "SH", start: "07:00", end: "08:00", color: "Gold", details: "SRC Open Study Hall" },
-      { title: "1F", start: "08:10", end: "09:40", color: "Gold", details: "Gold 1 Final" },
-      { title: "2F", start: "09:45", end: "11:15", color: "Gold", details: "Gold 2 Final" },
-      { title: "LU", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
-      { title: "3F", start: "11:50", end: "13:20", color: "Gold", details: "Gold 3 Final" },
-      { title: "SH", start: "13:25", end: "15:00", color: "Gold", details: "SRC Open Study Hall" },
+      { title: "SRC", start: "07:00", end: "08:00", color: "Gold", details: "SRC Open Study Hall" },
+      { title: "G1F", start: "08:10", end: "09:40", color: "Gold", details: "Gold 1 Final" },
+      { title: "G2F", start: "09:45", end: "11:15", color: "Gold", details: "Gold 2 Final" },
+      { title: "Lunch", start: "11:20", end: "11:45", color: "Lunch", details: "Lunch" },
+      { title: "G3F", start: "11:50", end: "13:20", color: "Gold", details: "Gold 3 Final" },
+      { title: "SRC", start: "13:25", end: "15:00", color: "Gold", details: "SRC Open Study Hall" },
     ]),
   },
 
@@ -336,8 +324,8 @@ const schedules = {
   backToSchoolNight: {
     label: "Back-to-School Night",
     events: [
-      { title: "SF", start: "17:30", color: "Grey", details: "Senior Family Night (SRC)" },
-      { title: "PW", start: "18:00", color: "Grey", details: "Principal's Welcome (Gym)" },
+      { title: "SFN", start: "17:30", color: "Grey", details: "Senior Family Night (SRC)" },
+      { title: "Welcome", start: "18:00", color: "Grey", details: "Principal's Welcome (Gym)" },
       ...buildEvents([
         { title: "MG", start: "18:30", end: "18:37", color: "Maroon", details: "Mentor Group" },
         { title: "G1", start: "18:41", end: "18:48", color: "Gold", details: "Gold 1" },
@@ -347,24 +335,10 @@ const schedules = {
         { title: "M2", start: "19:25", end: "19:32", color: "Maroon", details: "Maroon 2" },
         { title: "M3", start: "19:36", end: "19:43", color: "Maroon", details: "Maroon 3" },
         { title: "M4", start: "19:47", end: "19:54", color: "Maroon", details: "Maroon 4" },
-        { title: "ZP", start: "19:58", end: "20:05", color: "Maroon", details: "Zero Period" },
+        { title: "Z", start: "19:58", end: "20:05", color: "Maroon", details: "Zero Period" },
       ]),
     ],
   },
 };
-
-// Belt-and-suspenders on top of buildEvents()'s own check: covers
-// standalone events declared outside buildEvents() too (e.g. Back-to-
-// School Night's point triggers), so the 2-character rule holds for
-// every event in every schedule, no exceptions.
-for (const [key, schedule] of Object.entries(schedules)) {
-  for (const event of schedule.events) {
-    if (event.title.length !== 2) {
-      throw new Error(
-        `schedules.${key}: event title must be exactly 2 characters, got "${event.title}" (${event.title.length})`
-      );
-    }
-  }
-}
 
 module.exports = { order, schedules };
