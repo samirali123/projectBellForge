@@ -119,6 +119,17 @@ will flag it on first launch:
 The packaged app still needs Microsoft Edge installed on the machine — see
 "Why Edge, not Chrome" below.
 
+### Cutting a release
+
+1. Bump `"version"` in `app/package.json` (e.g. `0.1.0` -> `0.1.1`).
+2. `git tag v0.1.1 && git push origin v0.1.1`
+3. GitHub Actions builds both installers and creates a **draft** Release
+   with them attached — nothing is public yet.
+4. On GitHub, open the draft under **Releases**, check it over, then
+   click **Publish release**.
+5. Send clients the Release page link. They click the installer for
+   their OS, run it, done — no GitHub account or terminal needed.
+
 ---
 
 ## Why Edge, not Chrome
