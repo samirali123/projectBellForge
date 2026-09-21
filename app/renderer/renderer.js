@@ -200,6 +200,10 @@ document.getElementById("mode-single").addEventListener("click", () => {
 document.getElementById("mode-range").addEventListener("click", () => {
   showScreen("screen-range");
 });
+document.getElementById("mode-delete").addEventListener("click", () => {
+  resetDeleteScreen();
+  showScreen("screen-delete");
+});
 document.querySelectorAll(".back-link[data-back]").forEach((btn) => {
   btn.addEventListener("click", () => showScreen(btn.dataset.back));
 });
@@ -296,6 +300,81 @@ document.getElementById("range-review-btn").addEventListener("click", () => {
   pendingAssignments = assignments;
   reviewOrigin = "screen-range";
   showReview();
+});
+
+// --- delete-a-day screen ---------------------------------------------------
+
+function resetDeleteScreen() {
+  document.getElementById("delete-date").value = "";
+  document.getElementById("delete-confirm").value = "";
+  document.getElementById("delete-error").hidden = true;
+  document.getElementById("delete-log").hidden = true;
+  document.getElementById("delete-log").innerHTML = "";
+  document.getElementById("delete-summary").hidden = true;
+  document.getElementById("delete-done-btn").hidden = true;
+  const btn = document.getElementById("delete-confirm-btn");
+  btn.disabled = false;
+  btn.textContent = "Delete";
+  btn.hidden = false;
+  document.getElementById("delete-date").disabled = false;
+  document.getElementById("delete-confirm").disabled = false;
+}
+
+document.getElementById("delete-confirm-btn").addEventListener("click", async () => {
+  const dateInput = document.getElementById("delete-date");
+  const confirmInput = document.getElementById("delete-confirm");
+  const errorBox = document.getElementById("delete-error");
+  const logBox = document.getElementById("delete-log");
+  const summaryBox = document.getElementById("delete-summary");
+  const btn = document.getElementById("delete-confirm-btn");
+
+  errorBox.hidden = true;
+
+  const date = dateInput.value;
+  if (!date) {
+    errorBox.textContent = "Pick a date.";
+    errorBox.hidden = false;
+    return;
+  }
+  if (confirmInput.value.trim() !== date) {
+    errorBox.textContent = "The retyped date doesn't match. Nothing was deleted.";
+    errorBox.hidden = false;
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Deleting…";
+  dateInput.disabled = true;
+  confirmInput.disabled = true;
+
+  logBox.hidden = false;
+  logBox.innerHTML = "";
+  const logLine = (text, kind) => {
+    const line = document.createElement("div");
+    line.className = kind ? `line ${kind}` : "line";
+    line.textContent = text;
+    logBox.appendChild(line);
+  };
+  logLine(`Deleting every event on ${date}...`);
+
+  const result = await window.api.deleteDayEvents(date);
+
+  summaryBox.hidden = false;
+  if (result.ok) {
+    summaryBox.className = "progress-summary success";
+    summaryBox.textContent = `Deleted ${result.deleted} event(s) on ${date}.`;
+  } else {
+    summaryBox.className = "progress-summary fail";
+    summaryBox.textContent = result.error || "Something went wrong.";
+  }
+
+  btn.hidden = true;
+  document.getElementById("delete-done-btn").hidden = false;
+});
+
+document.getElementById("delete-done-btn").addEventListener("click", () => {
+  resetDeleteScreen();
+  showScreen("screen-mode");
 });
 
 // --- review screen ---------------------------------------------------------

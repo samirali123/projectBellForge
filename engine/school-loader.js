@@ -53,9 +53,9 @@ function loadSchool(schoolId) {
   const selectors = require(path.join(dir, "selectors.js"));
   const { createEngine } = require(platformPath);
 
-  const { connect, createEvent } = createEngine({ selectors, colors, config });
+  const { connect, createEvent, deleteDayEvents } = createEngine({ selectors, colors, config });
 
-  return { meta, order, schedules, colors, config, selectors, connect, createEvent };
+  return { meta, order, schedules, colors, config, selectors, connect, createEvent, deleteDayEvents };
 }
 
 module.exports = { listSchools, loadSchool };

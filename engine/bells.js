@@ -19,6 +19,7 @@ let schedules;
 let MENU_ORDER;
 let connect;
 let createEvent;
+let deleteDayEvents;
 
 const BLANK = "blank"; // range mode only — "no school / no bells on this date"
 const BLANK_LABEL = "Blank (no school / no bells)";
@@ -59,12 +60,13 @@ function enumerateDates(startStr, endStr) {
 }
 
 async function promptMode(rl) {
-  console.log("\n1) Single day\n2) Date range\n");
+  console.log("\n1) Single day\n2) Date range\n3) Delete a day\n");
   while (true) {
     const answer = (await rl.question("Selection: ")).trim();
     if (answer === "1") return "single";
     if (answer === "2") return "range";
-    console.log("Please enter 1 or 2.");
+    if (answer === "3") return "delete";
+    console.log("Please enter 1, 2, or 3.");
   }
 }
 
@@ -243,6 +245,33 @@ async function runRange(rl) {
   await runAssignments(assignments);
 }
 
+// Irreversible, so this asks for more than a Y/N — the operator has to
+// retype the exact date back, which catches "I meant to type a different
+// date" mistakes that a single keypress confirmation wouldn't.
+async function runDeleteDay(rl) {
+  const dateStr = await promptDate(rl);
+
+  console.log("\nThis will PERMANENTLY delete every event on this date.");
+  console.log("This cannot be undone.\n");
+  const confirmDate = (await rl.question(`Type the date again to confirm (${dateStr}): `)).trim();
+  if (confirmDate !== dateStr) {
+    console.log("\nDate didn't match. Aborted — nothing was deleted.");
+    return;
+  }
+
+  console.log("\nAttaching to Edge...");
+  const { page } = await connect();
+  console.log("Connected. Deleting...\n");
+
+  try {
+    const { deleted } = await deleteDayEvents(page, dateStr);
+    console.log(`\nDeleted ${deleted} event(s) on ${dateStr}.`);
+  } catch (err) {
+    console.error(`\nFAILED: ${err.message}`);
+    console.log("Run halted. Browser left open for inspection.");
+  }
+}
+
 async function run() {
   const rl = createInterface({ input: stdin, output: stdout });
 
@@ -253,14 +282,17 @@ async function run() {
     MENU_ORDER = school.order;
     connect = school.connect;
     createEvent = school.createEvent;
+    deleteDayEvents = school.deleteDayEvents;
 
     console.log(`\n${school.meta.name}`);
 
     const mode = await promptMode(rl);
     if (mode === "single") {
       await runSingleDay(rl);
-    } else {
+    } else if (mode === "range") {
       await runRange(rl);
+    } else {
+      await runDeleteDay(rl);
     }
   } finally {
     rl.close();

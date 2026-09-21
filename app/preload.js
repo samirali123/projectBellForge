@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("api", {
   launchAndConnect: (schoolId) => ipcRenderer.invoke("launch-and-connect", { schoolId }),
   getScheduleMenu: () => ipcRenderer.invoke("get-schedule-menu"),
   createEvents: (assignments) => ipcRenderer.invoke("create-events", { assignments }),
+  deleteDayEvents: (date) => ipcRenderer.invoke("delete-day-events", { date }),
 
   onStatus: (callback) => {
     const listener = (event, text) => callback(text);

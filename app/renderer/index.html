@@ -49,6 +49,10 @@
           <span class="mode-title">Date range</span>
           <span class="mode-desc">Assign a schedule to every date in a range</span>
         </button>
+        <button id="mode-delete" class="mode-btn mode-btn-danger">
+          <span class="mode-title">Delete a day</span>
+          <span class="mode-desc">Permanently remove every event on one date</span>
+        </button>
       </div>
     </section>
 
@@ -87,6 +91,27 @@
         </table>
         <button id="range-review-btn">Review</button>
       </div>
+    </section>
+
+    <!-- Screen 3b: delete a day -->
+    <section id="screen-delete" class="screen" hidden>
+      <button class="back-link" data-back="screen-mode">&larr; Back</button>
+      <label class="field">
+        <span>Date</span>
+        <input id="delete-date" type="date" />
+      </label>
+      <div class="danger-warning">
+        This permanently deletes every event on this date. This cannot be undone.
+      </div>
+      <label class="field">
+        <span>Type the date again to confirm (YYYY-MM-DD)</span>
+        <input id="delete-confirm" type="text" autocomplete="off" placeholder="YYYY-MM-DD" />
+      </label>
+      <button id="delete-confirm-btn" class="danger-btn">Delete</button>
+      <div id="delete-error" class="error" hidden></div>
+      <div id="delete-log" class="log" hidden></div>
+      <div id="delete-summary" class="progress-summary" hidden></div>
+      <button id="delete-done-btn" hidden>Done — back to menu</button>
     </section>
 
     <!-- Screen 5: review -->

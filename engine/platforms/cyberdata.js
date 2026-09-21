@@ -153,7 +153,106 @@ function createEngine({ selectors, colors, config }) {
     await dialog.waitFor({ state: "hidden", timeout: config.dialogTimeoutMs });
   }
 
-  return { connect, createEvent };
+  // ------------------------------------------------------------ DELETE --
+  // Unlike creation (which never needs month navigation — the New Event
+  // dialog takes a date directly), deletion has to interact with the
+  // actual rendered calendar grid, so this reads whatever month/year is
+  // currently displayed and clicks the < / > arrows until it matches.
+  const MONTH_NAMES = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  async function currentDisplayedMonth(page) {
+    const headerText = await page
+      .getByText(/^[A-Z][a-z]+ \d{4}$/)
+      .first()
+      .innerText();
+    const [monthName, yearStr] = headerText.trim().split(/\s+/);
+    const monthIdx = MONTH_NAMES.indexOf(monthName);
+    if (monthIdx === -1) {
+      throw new Error(`Could not parse the calendar's month header: "${headerText}"`);
+    }
+    return { year: Number(yearStr), monthIdx };
+  }
+
+  async function navigateToMonth(page, targetYear, targetMonth1to12) {
+    const targetTotal = targetYear * 12 + (targetMonth1to12 - 1);
+
+    // Bounded, not infinite — 60 clicks covers 5 years in either
+    // direction, which is far more than this tool will ever legitimately
+    // need, so a bug here fails loudly instead of clicking forever.
+    for (let guard = 0; guard < 60; guard++) {
+      const { year, monthIdx } = await currentDisplayedMonth(page);
+      const currentTotal = year * 12 + monthIdx;
+      if (currentTotal === targetTotal) return;
+
+      const button =
+        currentTotal < targetTotal
+          ? page.getByRole("button", { name: ">", description: "Next month" })
+          : page.getByRole("button", { name: "<", description: "Previous month" });
+      await button.click();
+      await page.waitForTimeout(300); // let the grid re-render before re-reading the header
+    }
+
+    throw new Error(
+      `Could not navigate the calendar to ${MONTH_NAMES[targetMonth1to12 - 1]} ${targetYear} ` +
+        `after 60 clicks — something's wrong with month navigation.`
+    );
+  }
+
+  /**
+   * Delete every event on one calendar date. Irreversible — callers must
+   * get explicit, unambiguous confirmation before calling this; nothing
+   * in this function asks again.
+   *
+   * Each event row is a day-cell's `.tasks > li` child; clicking it
+   * reveals a `.remove-task` button, which triggers a native confirm()
+   * dialog (not part of the page DOM — handled via page.once("dialog",...),
+   * not a locator). Re-queries the row list after every deletion rather
+   * than indexing into a snapshot, since removing one row shifts the DOM.
+   *
+   * @param {import('playwright').Page} page
+   * @param {string} dateStr - "YYYY-MM-DD"
+   * @returns {Promise<{deleted: number}>}
+   */
+  async function deleteDayEvents(page, dateStr) {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    await navigateToMonth(page, year, month);
+
+    // Day cells render the bare day-of-month number first, immediately
+    // followed by that day's event lines — confirmed live (e.g. a day 18
+    // cell's text starts "18 08:10 - 23:59 G1 ..."). Anchored at the start
+    // with a non-digit boundary so day 1 doesn't also match day 18, etc.
+    const dayCell = page.locator("li").filter({ hasText: new RegExp(`^${day}\\D`) }).first();
+    await dayCell.waitFor({ state: "visible", timeout: 10000 });
+
+    const eventRows = dayCell.locator(".tasks > li");
+    let deleted = 0;
+
+    while (true) {
+      const count = await eventRows.count();
+      if (count === 0) break;
+
+      const row = eventRows.first();
+      await row.click(); // reveals .remove-task within this row (accordion)
+
+      const removeBtn = row.locator(".button.smaller.remove-task");
+      await removeBtn.waitFor({ state: "visible", timeout: 5000 });
+
+      page.once("dialog", (dialog) => dialog.accept().catch(() => {}));
+      await removeBtn.click();
+
+      // Confirms the deletion actually round-tripped, not just that the
+      // button was clicked.
+      await row.waitFor({ state: "detached", timeout: 10000 });
+      deleted += 1;
+    }
+
+    return { deleted };
+  }
+
+  return { connect, createEvent, deleteDayEvents };
 }
 
 module.exports = { createEngine };

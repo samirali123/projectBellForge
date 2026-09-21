@@ -234,6 +234,7 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
       order: loaded.order,
       schedules: loaded.schedules,
       createEvent: loaded.createEvent,
+      deleteDayEvents: loaded.deleteDayEvents,
     };
 
     sendStatus("Ready — log into CyberData in the Edge window, then continue there.");
@@ -270,6 +271,20 @@ ipcMain.handle("create-events", async (event, { assignments }) => {
       onProgress: sendProgress,
     });
     return { ok: !haltedOn, succeeded, totalEvents, haltedOn };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+// Irreversible. The UI is responsible for the "type the date again to
+// confirm" gate before this is ever invoked — this handler doesn't ask
+// again, it just does it.
+ipcMain.handle("delete-day-events", async (event, { date }) => {
+  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+
+  try {
+    const { deleted } = await currentSession.deleteDayEvents(currentSession.page, date);
+    return { ok: true, deleted };
   } catch (err) {
     return { ok: false, error: err.message };
   }

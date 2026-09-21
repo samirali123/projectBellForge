@@ -372,3 +372,35 @@ button:disabled {
   color: var(--danger);
   background: var(--danger-bg);
 }
+
+.mode-btn-danger {
+  grid-column: 1 / -1;
+  border-color: var(--danger);
+}
+
+.mode-btn-danger .mode-title {
+  color: var(--danger);
+}
+
+.mode-btn-danger:hover {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.danger-warning {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  line-height: 1.4;
+}
+
+.danger-btn {
+  background: var(--danger);
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: #a02d21;
+}
