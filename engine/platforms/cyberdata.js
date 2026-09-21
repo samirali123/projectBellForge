@@ -156,49 +156,36 @@ function createEngine({ selectors, colors, config }) {
   // ------------------------------------------------------------ DELETE --
   // Unlike creation (which never needs month navigation — the New Event
   // dialog takes a date directly), deletion has to interact with the
-  // actual rendered calendar grid, so this reads whatever month/year is
-  // currently displayed and clicks the < / > arrows until it matches.
-  const MONTH_NAMES = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
-
-  async function currentDisplayedMonth(page) {
-    const headerText = await page
-      .getByText(/^[A-Z][a-z]+ \d{4}$/)
-      .first()
-      .innerText();
-    const [monthName, yearStr] = headerText.trim().split(/\s+/);
-    const monthIdx = MONTH_NAMES.indexOf(monthName);
-    if (monthIdx === -1) {
-      throw new Error(`Could not parse the calendar's month header: "${headerText}"`);
-    }
-    return { year: Number(yearStr), monthIdx };
-  }
-
+  // actual rendered calendar grid.
+  //
+  // First attempt tried reading the on-screen "Month YYYY" header text to
+  // know where the calendar currently was — that broke live (a 30s
+  // timeout on the locator, meaning the assumed text shape didn't match
+  // reality) and isn't worth re-guessing at. Instead: navigate fresh to
+  // config.calendarUrl first, which is confirmed to always land on the
+  // REAL current month (see the very first calendar screenshot from this
+  // project — today's date was already circled on load). That turns
+  // "where is the calendar right now" from a thing we'd otherwise have to
+  // scrape off the page into a known quantity — the system clock — so
+  // month navigation becomes pure arithmetic instead of a read-loop.
   async function navigateToMonth(page, targetYear, targetMonth1to12) {
+    await page.goto(config.calendarUrl, { waitUntil: "domcontentloaded" });
+
+    const now = new Date();
+    const currentTotal = now.getFullYear() * 12 + now.getMonth(); // getMonth() is 0-11
     const targetTotal = targetYear * 12 + (targetMonth1to12 - 1);
+    const diff = targetTotal - currentTotal;
+    if (diff === 0) return;
 
-    // Bounded, not infinite — 60 clicks covers 5 years in either
-    // direction, which is far more than this tool will ever legitimately
-    // need, so a bug here fails loudly instead of clicking forever.
-    for (let guard = 0; guard < 60; guard++) {
-      const { year, monthIdx } = await currentDisplayedMonth(page);
-      const currentTotal = year * 12 + monthIdx;
-      if (currentTotal === targetTotal) return;
+    const button =
+      diff > 0
+        ? page.getByRole("button", { name: ">", description: "Next month" })
+        : page.getByRole("button", { name: "<", description: "Previous month" });
 
-      const button =
-        currentTotal < targetTotal
-          ? page.getByRole("button", { name: ">", description: "Next month" })
-          : page.getByRole("button", { name: "<", description: "Previous month" });
+    for (let i = 0; i < Math.abs(diff); i++) {
       await button.click();
-      await page.waitForTimeout(300); // let the grid re-render before re-reading the header
+      await page.waitForTimeout(300); // let the grid re-render between clicks
     }
-
-    throw new Error(
-      `Could not navigate the calendar to ${MONTH_NAMES[targetMonth1to12 - 1]} ${targetYear} ` +
-        `after 60 clicks — something's wrong with month navigation.`
-    );
   }
 
   /**
