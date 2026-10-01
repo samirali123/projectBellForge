@@ -1,5 +1,14 @@
 :root {
   color-scheme: light dark;
+
+  /* Spacing scale. Every padding, margin and gap uses one of these. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
   --bg: #f4f4f6;
   --card-bg: #ffffff;
   --text: #1a1a1e;
@@ -31,6 +40,12 @@
   box-sizing: border-box;
 }
 
+/* Elements with their own display (flex/grid) would otherwise ignore the
+   hidden attribute and show up as empty boxes. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -46,15 +61,15 @@ body {
 
 .card {
   width: 100%;
-  max-width: 400px;
-  padding: 28px 28px 32px;
+  max-width: 416px;
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 header {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 h1 {
@@ -65,7 +80,7 @@ h1 {
 }
 
 .subtitle {
-  margin: 2px 0 0;
+  margin: var(--space-1) 0 0;
   font-size: 13px;
   color: var(--muted);
 }
@@ -73,7 +88,7 @@ h1 {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
@@ -87,7 +102,7 @@ input {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: var(--space-3);
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -100,10 +115,10 @@ input:focus {
 .network-status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: 13px;
   color: var(--muted);
-  margin-top: -6px;
+  margin-top: calc(-1 * var(--space-2));
 }
 
 .dot {
@@ -142,10 +157,10 @@ button {
   background: var(--accent);
   border: none;
   border-radius: 8px;
-  padding: 12px;
+  padding: var(--space-3);
   cursor: pointer;
   transition: background 0.15s ease;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 button:hover:not(:disabled) {
@@ -162,7 +177,7 @@ button:disabled {
   color: var(--danger);
   background: var(--danger-bg);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: var(--space-3);
   line-height: 1.4;
 }
 
@@ -173,12 +188,12 @@ button:disabled {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: var(--space-3);
   max-height: 160px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .log .line.success {
@@ -194,13 +209,13 @@ button:disabled {
 .log .line.heading {
   color: var(--text);
   font-weight: 700;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .screen {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .screen[hidden] {
@@ -234,19 +249,19 @@ button:disabled {
 .mode-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .mode-btn {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: var(--space-1);
   background: var(--card-bg);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 14px;
+  padding: var(--space-4);
   text-align: left;
   cursor: pointer;
   margin: 0;
@@ -271,13 +286,13 @@ button:disabled {
 .range-dates {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .range-table-wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .range-table {
@@ -298,8 +313,8 @@ button:disabled {
 .range-table tr {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
 }
 
@@ -319,26 +334,26 @@ button:disabled {
 
 .range-table select {
   width: 100%;
-  padding: 6px 8px;
+  padding: var(--space-2);
   font-size: 12px;
 }
 
 .review-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
   max-height: 260px;
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: var(--space-3);
   font-size: 13px;
 }
 
 .review-item {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .review-item .review-schedule {
@@ -359,7 +374,7 @@ button:disabled {
 .progress-summary {
   font-size: 14px;
   font-weight: 600;
-  padding: 10px 12px;
+  padding: var(--space-3);
   border-radius: 8px;
 }
 
@@ -382,14 +397,14 @@ button:disabled {
   color: var(--ok);
   background: rgba(31, 138, 76, 0.12);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: var(--space-3);
   line-height: 1.4;
 }
 
 .hint {
   font-size: 12px;
   color: var(--muted);
-  margin: -6px 0 0;
+  margin: calc(-1 * var(--space-2)) 0 0;
   line-height: 1.4;
 }
 
@@ -405,15 +420,15 @@ button:disabled {
 
 .builder-blocks .empty {
   color: var(--muted);
-  padding: 10px 12px;
+  padding: var(--space-3);
   margin: 0;
 }
 
 .block-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
 }
 
@@ -439,7 +454,7 @@ button:disabled {
   background: none;
   color: var(--danger);
   font-size: 12px;
-  padding: 2px 4px;
+  padding: var(--space-1);
   margin: 0;
 }
 
@@ -451,16 +466,16 @@ button:disabled {
 .builder-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px;
+  padding: var(--space-3);
 }
 
 .builder-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .builder-row .field {
@@ -480,7 +495,7 @@ input:disabled {
 .checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: 13px;
   color: var(--muted);
 }
@@ -513,7 +528,7 @@ input:disabled {
 .import-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 button.secondary {
@@ -521,7 +536,7 @@ button.secondary {
   color: var(--text);
   border: 1px solid var(--border);
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   font-size: 13px;
 }
 
@@ -550,7 +565,7 @@ button.link-btn:hover:not(:disabled) {
 .block-item .block-confirm {
   background: var(--danger);
   font-size: 12px;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   margin: 0;
 }
 
@@ -563,7 +578,7 @@ button.link-btn:hover:not(:disabled) {
   background: none;
   color: var(--muted);
   font-size: 12px;
-  padding: 2px 4px;
+  padding: var(--space-1);
   margin: 0;
 }
 
