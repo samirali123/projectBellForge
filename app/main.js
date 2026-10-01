@@ -43,7 +43,16 @@ let mainWindow;
 // only ever one active connection at a time, matching the CLI's model.
 let currentSession = null;
 
+// The packaged app gets its icon from the build (app/build/, see
+// package.json "build"). When running unpacked with `npm start`, Electron
+// would otherwise show its own logo in the Dock and taskbar, so set it here.
+const DEV_ICON = path.join(__dirname, "build", process.platform === "darwin" ? "icon-mac.png" : "icon.png");
+
 function createWindow() {
+  if (!app.isPackaged && process.platform === "darwin" && fs.existsSync(DEV_ICON)) {
+    app.dock.setIcon(DEV_ICON);
+  }
+
   mainWindow = new BrowserWindow({
     width: 480,
     height: 680,
@@ -51,6 +60,7 @@ function createWindow() {
     minHeight: 520,
     resizable: true,
     title: "BellForge",
+    ...(!app.isPackaged && fs.existsSync(DEV_ICON) ? { icon: DEV_ICON } : {}),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

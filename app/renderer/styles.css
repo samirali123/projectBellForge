@@ -795,3 +795,17 @@ button.link-btn:hover:not(:disabled) {
   background: var(--ok);
   box-shadow: none;
 }
+
+/* --- brand ---------------------------------------------------------------- */
+
+.brand {
+  line-height: 0;
+}
+
+/* Lockup images carry their own height in the artwork, so size by height
+   and let the width follow (about 4:1). */
+.brand-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}

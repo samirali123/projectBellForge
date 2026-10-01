@@ -10,7 +10,14 @@
     <header>
       <div class="header-row">
         <div>
-          <h1>BellForge</h1>
+          <h1 class="brand">
+            <!-- Full lockup; the white-lettering version swaps in for dark
+                 mode (prefers-color-scheme follows the theme switch). -->
+            <picture>
+              <source srcset="assets/bellforge-logo-on-dark.png" media="(prefers-color-scheme: dark)" />
+              <img src="assets/bellforge-logo-on-light.png" alt="BellForge" class="brand-logo" />
+            </picture>
+          </h1>
           <p id="subtitle" class="subtitle" hidden></p>
         </div>
         <div id="theme-switch" class="segmented" role="radiogroup" aria-label="Appearance">
