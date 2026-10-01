@@ -25,7 +25,13 @@ const path = require("path");
 
 const NAME = "BellForge";
 
-if (process.platform !== "darwin") process.exit(0);
+// Nothing to rebrand on build servers (CI builds package their own named
+// copy), and this must never be the reason an install fails.
+if (process.platform !== "darwin" || process.env.CI) process.exit(0);
+process.on("uncaughtException", (err) => {
+  console.warn(`brand-dev-electron: skipped (${err.message}). npm start will show "Electron".`);
+  process.exit(0);
+});
 
 const electronDir =
   process.env.BELLFORGE_ELECTRON_DIR || path.join(__dirname, "..", "app", "node_modules", "electron");
