@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("api", {
   validateBlock: (block) => ipcRenderer.invoke("validate-block", { block }),
   previewSchedule: (label, blocks) => ipcRenderer.invoke("preview-schedule", { label, blocks }),
   saveSchedule: (label, blocks) => ipcRenderer.invoke("save-schedule", { label, blocks }),
+  deleteSchedule: (key) => ipcRenderer.invoke("delete-schedule", { key }),
   importScheduleCsv: () => ipcRenderer.invoke("import-schedule-csv"),
   saveCsvTemplate: () => ipcRenderer.invoke("save-csv-template"),
 

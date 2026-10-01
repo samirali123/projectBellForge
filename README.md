@@ -179,7 +179,8 @@ CyberDataAutomation/
         ├── schedules.json        this school's real bell times (as blocks) for every schedule type, plus menu order
         ├── schedules.notes.md    where those bell times came from
         ├── schedule-import-template.csv   worked example for the builder's Import CSV
-        ├── colors.js             semantic color name -> this school's color-picker button label
+        ├── colors.js             built-in schedules' color names -> this school's color-picker button label
+        ├── picker-colors.js      the color-picker button labels offered when adding schedules
         ├── config.js             this school's CDP port, device IP, delays, retries, audio file
         └── selectors.js          this school's confirmed page locators (see inspect.js)
 ```
@@ -190,6 +191,13 @@ In BellForge, after connecting, choose **New schedule type**. Name it, add
 its blocks (title, color, start and end time, or tick "point event" for a
 single bell with no end), then **Preview** to see every bell that will be
 created, including the automatic Pass and Dismissal bells, before saving.
+Colors are CyberData's color-picker labels, listed per school in
+`schools/<school>/picker-colors.js`.
+
+**My schedules** lists the schedule types you've added and lets you delete
+them (Delete, then confirm). That only removes the type from BellForge;
+bells already created in CyberData aren't touched, and built-in schedules
+can't be deleted.
 
 To fill in the blocks in Excel or Google Sheets instead, click **Get CSV
 template**, fill it in (columns `title, details, start, end, color`, one

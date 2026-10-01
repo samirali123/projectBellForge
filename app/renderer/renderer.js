@@ -191,6 +191,13 @@ function applyScheduleMenu(menu) {
     colorSelect.appendChild(opt);
   }
 
+  renderMySchedules();
+
+  // A date-range table built before this refresh may list a schedule that
+  // was just deleted; clear it so it gets regenerated from the new list.
+  document.getElementById("range-table-wrap").hidden = true;
+  document.querySelector("#range-table tbody").innerHTML = "";
+
   const warningsBox = document.getElementById("mode-warnings");
   warningsBox.textContent = menu.warnings.join("\n");
   warningsBox.hidden = menu.warnings.length === 0;
@@ -219,6 +226,12 @@ document.getElementById("mode-single").addEventListener("click", () => {
 });
 document.getElementById("mode-range").addEventListener("click", () => {
   showScreen("screen-range");
+});
+document.getElementById("mode-mine").addEventListener("click", () => {
+  document.getElementById("mode-notice").hidden = true;
+  document.getElementById("my-schedules-error").hidden = true;
+  renderMySchedules();
+  showScreen("screen-my-schedules");
 });
 document.getElementById("mode-build").addEventListener("click", () => {
   document.getElementById("mode-notice").hidden = true;
@@ -322,6 +335,67 @@ document.getElementById("range-review-btn").addEventListener("click", () => {
   reviewOrigin = "screen-range";
   showReview();
 });
+
+// --- my schedules -----------------------------------------------------------
+
+// Lists only schedules added through the builder. Deleting takes two
+// clicks: Delete swaps the row into a "Delete X?" confirm state first.
+function renderMySchedules() {
+  const list = document.getElementById("my-schedules-list");
+  list.innerHTML = "";
+  const mine = scheduleMenu.items.filter((item) => item.custom);
+  if (mine.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "You haven't added any schedule types yet.";
+    list.appendChild(empty);
+    return;
+  }
+
+  for (const item of mine) {
+    const row = document.createElement("div");
+    row.className = "block-item";
+    const text = document.createElement("span");
+    text.className = "block-text";
+    text.textContent = `${item.label} (${item.eventCount} bells)`;
+    text.title = text.textContent;
+    const del = document.createElement("button");
+    del.className = "block-remove";
+    del.textContent = "Delete";
+    del.addEventListener("click", () => confirmDelete(row, item));
+    row.append(text, del);
+    list.appendChild(row);
+  }
+}
+
+function confirmDelete(row, item) {
+  row.innerHTML = "";
+  row.classList.add("confirming");
+  const text = document.createElement("span");
+  text.className = "block-text";
+  text.textContent = `Delete "${item.label}"?`;
+  const yes = document.createElement("button");
+  yes.className = "block-confirm";
+  yes.textContent = "Delete";
+  const no = document.createElement("button");
+  no.className = "block-cancel";
+  no.textContent = "Cancel";
+  no.addEventListener("click", renderMySchedules);
+  yes.addEventListener("click", async () => {
+    yes.disabled = true;
+    const result = await window.api.deleteSchedule(item.key);
+    if (!result.ok) {
+      const box = document.getElementById("my-schedules-error");
+      box.textContent = result.error;
+      box.hidden = false;
+      renderMySchedules();
+      return;
+    }
+    document.getElementById("my-schedules-error").hidden = true;
+    applyScheduleMenu(result.menu);
+  });
+  row.append(text, yes, no);
+}
 
 // --- schedule builder -------------------------------------------------------
 // The renderer only collects input. Every rule (title length, time format,

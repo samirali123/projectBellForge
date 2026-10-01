@@ -49,9 +49,13 @@
           <span class="mode-title">Date range</span>
           <span class="mode-desc">Assign a schedule to every date in a range</span>
         </button>
-        <button id="mode-build" class="mode-btn wide">
+        <button id="mode-build" class="mode-btn">
           <span class="mode-title">New schedule type</span>
           <span class="mode-desc">Build a schedule that isn't in the list yet</span>
+        </button>
+        <button id="mode-mine" class="mode-btn">
+          <span class="mode-title">My schedules</span>
+          <span class="mode-desc">Schedule types you've added</span>
         </button>
       </div>
       <div id="mode-notice" class="notice" hidden></div>
@@ -147,6 +151,18 @@
 
       <div id="builder-error" class="error" hidden></div>
       <button id="builder-preview-btn">Preview</button>
+    </section>
+
+    <!-- Screen: schedules added in the builder -->
+    <section id="screen-my-schedules" class="screen" hidden>
+      <button class="back-link" data-back="screen-mode">&larr; Back</button>
+      <p class="section-label">Schedule types you've added</p>
+      <p class="hint">
+        Deleting one removes it from BellForge's list only. Bells already created
+        in CyberData aren't affected. Built-in schedules can't be deleted.
+      </p>
+      <div id="my-schedules-list" class="builder-blocks"></div>
+      <div id="my-schedules-error" class="error" hidden></div>
     </section>
 
     <!-- Screen: schedule builder preview -->

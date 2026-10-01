@@ -108,6 +108,18 @@ function saveCustomSchedule(schoolId, { label, blocks }, { takenKeys, colorKeys 
   return { ok: true, key };
 }
 
+// Removes one added schedule. Only keys in this school's
+// custom-schedules.json can be deleted, so a built-in schedule never can.
+function deleteCustomSchedule(schoolId, key) {
+  const current = readCustomFile(schoolId);
+  if (!current.schedules[key]) return { ok: false, error: "That isn't one of your added schedules." };
+  const { label } = current.schedules[key];
+  delete current.schedules[key];
+  current.order = current.order.filter((k) => k !== key);
+  writeAtomic(customSchedulesPath(schoolId), JSON.stringify(current, null, 2) + "\n");
+  return { ok: true, label };
+}
+
 // Keeps only the known fields, drops blank details, and stores fields in
 // the same order as schedules.json. A blank end is kept (and fails
 // validation) rather than dropped: leaving out `end` is how a block says
@@ -130,4 +142,5 @@ module.exports = {
   makeKey,
   normalizeBlock,
   saveCustomSchedule,
+  deleteCustomSchedule,
 };

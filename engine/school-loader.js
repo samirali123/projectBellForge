@@ -55,7 +55,16 @@ function loadSchool(schoolId) {
     JSON.parse(fs.readFileSync(path.join(dir, "schedules.json"), "utf8"))
   );
   const colors = require(path.join(dir, "colors.js"));
-  const { order, schedules, warnings } = mergeCustomSchedules(schoolId, builtIn, Object.keys(colors));
+  // Colors offered for new schedules: the picker's real button labels.
+  // Older schools without picker-colors.js fall back to what colors.js maps to.
+  const pickerColorsPath = path.join(dir, "picker-colors.js");
+  const pickerColors = fs.existsSync(pickerColorsPath)
+    ? require(pickerColorsPath)
+    : [...new Set(Object.values(colors))];
+  // Added schedules may use a picker label or (if saved before the picker
+  // list existed) one of colors.js's names; both resolve to a real button.
+  const loadableColors = [...new Set([...pickerColors, ...Object.keys(colors)])];
+  const { order, schedules, customKeys, warnings } = mergeCustomSchedules(schoolId, builtIn, loadableColors);
 
   const config = require(path.join(dir, "config.js"));
   const selectors = require(path.join(dir, "selectors.js"));
@@ -63,7 +72,19 @@ function loadSchool(schoolId) {
 
   const { connect, createEvent } = createEngine({ selectors, colors, config });
 
-  return { meta, order, schedules, warnings, colors, config, selectors, connect, createEvent };
+  return {
+    meta,
+    order,
+    schedules,
+    customKeys,
+    warnings,
+    colors,
+    pickerColors,
+    config,
+    selectors,
+    connect,
+    createEvent,
+  };
 }
 
 // Appends the schedules this school added through BellForge (see
@@ -74,6 +95,7 @@ function mergeCustomSchedules(schoolId, builtIn, colorKeys) {
   const order = [...builtIn.order];
   const schedules = { ...builtIn.schedules };
   const warnings = [];
+  const customKeys = [];
 
   let custom;
   try {
@@ -83,7 +105,7 @@ function mergeCustomSchedules(schoolId, builtIn, colorKeys) {
       `Couldn't read your added schedules (${customSchedulesPath(schoolId)}): ${err.message}. ` +
         `Built-in schedules are still available.`
     );
-    return { order, schedules, warnings };
+    return { order, schedules, customKeys, warnings };
   }
 
   for (const key of custom.order) {
@@ -103,9 +125,10 @@ function mergeCustomSchedules(schoolId, builtIn, colorKeys) {
     }
     schedules[key] = { label: raw.label, events: expandBlocks(raw.blocks) };
     order.push(key);
+    customKeys.push(key);
   }
 
-  return { order, schedules, warnings };
+  return { order, schedules, customKeys, warnings };
 }
 
 module.exports = { listSchools, loadSchool };

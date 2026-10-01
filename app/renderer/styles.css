@@ -542,3 +542,32 @@ button.link-btn:hover:not(:disabled) {
   background: none;
   text-decoration: underline;
 }
+
+.block-item.confirming {
+  background: var(--danger-bg);
+}
+
+.block-item .block-confirm {
+  background: var(--danger);
+  font-size: 12px;
+  padding: 4px 8px;
+  margin: 0;
+}
+
+.block-item .block-confirm:hover:not(:disabled) {
+  background: var(--danger);
+  filter: brightness(1.1);
+}
+
+.block-item .block-cancel {
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 2px 4px;
+  margin: 0;
+}
+
+.block-item .block-cancel:hover {
+  background: none;
+  text-decoration: underline;
+}

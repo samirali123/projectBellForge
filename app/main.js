@@ -26,7 +26,9 @@ const { listSchools, loadSchool } = require(resourcePath("engine", "school-loade
 const { verifyPassword } = require(resourcePath("engine", "school-auth"));
 const { createEvents } = require(resourcePath("engine", "create-events"));
 const { validateBlock, validateSchedule, expandBlocks } = require(resourcePath("engine", "schedule-expand"));
-const { normalizeBlock, saveCustomSchedule } = require(resourcePath("engine", "custom-schedules"));
+const { normalizeBlock, saveCustomSchedule, deleteCustomSchedule } = require(
+  resourcePath("engine", "custom-schedules")
+);
 const { parseScheduleCsv } = require(resourcePath("engine", "schedule-csv"));
 
 const CDP_PORT = 9222;
@@ -236,8 +238,10 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
       page,
       order: loaded.order,
       schedules: loaded.schedules,
+      customKeys: loaded.customKeys,
       warnings: loaded.warnings,
-      colorKeys: Object.keys(loaded.colors),
+      // New schedules use CyberData's real color-picker labels.
+      colorKeys: loaded.pickerColors,
       createEvent: loaded.createEvent,
     };
 
@@ -253,6 +257,7 @@ function scheduleMenu() {
     key,
     label: currentSession.schedules[key].label,
     eventCount: currentSession.schedules[key].events.length,
+    custom: currentSession.customKeys.includes(key),
   }));
   return {
     ok: true,
@@ -336,19 +341,42 @@ ipcMain.handle("save-schedule", (event, { label, blocks }) => {
       { takenKeys: Object.keys(currentSession.schedules), colorKeys: currentSession.colorKeys }
     );
     if (!result.ok) return result;
-
-    // Reload so the new schedule goes through exactly the same load path
-    // the CLI and the next app launch will use. Only the schedule data is
-    // swapped in; the live Edge connection is kept.
-    const reloaded = loadSchool(currentSession.schoolId);
-    currentSession.order = reloaded.order;
-    currentSession.schedules = reloaded.schedules;
-    currentSession.warnings = reloaded.warnings;
+    reloadSchedules();
     return { ok: true, key: result.key, menu: scheduleMenu() };
   } catch (err) {
     return { ok: false, errors: [`Couldn't save: ${err.message}`] };
   }
 });
+
+// Deletes one schedule added through the builder. Built-in schedules can't
+// be deleted (deleteCustomSchedule only looks in custom-schedules.json).
+// This only removes the schedule type from BellForge; it never touches
+// events already created in CyberData.
+ipcMain.handle("delete-schedule", (event, { key }) => {
+  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+  if (!currentSession.customKeys.includes(key)) {
+    return { ok: false, error: "Only schedules you added can be deleted." };
+  }
+  try {
+    const result = deleteCustomSchedule(currentSession.schoolId, key);
+    if (!result.ok) return result;
+    reloadSchedules();
+    return { ok: true, label: result.label, menu: scheduleMenu() };
+  } catch (err) {
+    return { ok: false, error: `Couldn't delete: ${err.message}` };
+  }
+});
+
+// Re-reads schedules through exactly the same load path the CLI and the
+// next app launch use. Only schedule data is swapped in; the live Edge
+// connection is kept.
+function reloadSchedules() {
+  const reloaded = loadSchool(currentSession.schoolId);
+  currentSession.order = reloaded.order;
+  currentSession.schedules = reloaded.schedules;
+  currentSession.customKeys = reloaded.customKeys;
+  currentSession.warnings = reloaded.warnings;
+}
 
 ipcMain.handle("create-events", async (event, { assignments }) => {
   if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
