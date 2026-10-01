@@ -372,3 +372,139 @@ button:disabled {
   color: var(--danger);
   background: var(--danger-bg);
 }
+
+.mode-btn.wide {
+  grid-column: 1 / -1;
+}
+
+.notice {
+  font-size: 13px;
+  color: var(--ok);
+  background: rgba(31, 138, 76, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  line-height: 1.4;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: -6px 0 0;
+  line-height: 1.4;
+}
+
+.builder-blocks {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.builder-blocks .empty {
+  color: var(--muted);
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.block-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.block-item:last-child {
+  border-bottom: none;
+}
+
+.block-item .block-time {
+  flex: 0 0 92px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.block-item .block-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.block-item .block-remove {
+  background: none;
+  color: var(--danger);
+  font-size: 12px;
+  padding: 2px 4px;
+  margin: 0;
+}
+
+.block-item .block-remove:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+.builder-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.builder-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.builder-row .field {
+  min-width: 0;
+}
+
+input.invalid,
+select.invalid {
+  border-color: var(--danger);
+}
+
+input:disabled {
+  opacity: 0.45;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.checkbox input {
+  padding: 0;
+  margin: 0;
+}
+
+.field-errors {
+  font-size: 12px;
+  color: var(--danger);
+  line-height: 1.4;
+}
+
+.field-errors:empty {
+  display: none;
+}
+
+.review-item.auto {
+  color: var(--muted);
+}
+
+#builder-error,
+#preview-error,
+#mode-warnings {
+  white-space: pre-line;
+}

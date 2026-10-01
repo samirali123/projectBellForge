@@ -8,7 +8,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const { expandScheduleFile } = require("./schedule-expand");
+const { expandScheduleFile, expandBlocks, validateSchedule } = require("./schedule-expand");
+const { readCustomFile, customSchedulesPath } = require("./custom-schedules");
 
 const SCHOOLS_DIR = path.join(__dirname, "..", "schools");
 const PLATFORMS_DIR = path.join(__dirname, "platforms");
@@ -50,17 +51,61 @@ function loadSchool(schoolId) {
 
   // schedules.json holds authored blocks only; Pass/Dismissal triggers are
   // derived here, at load time (see schedule-expand.js).
-  const { order, schedules } = expandScheduleFile(
+  const builtIn = expandScheduleFile(
     JSON.parse(fs.readFileSync(path.join(dir, "schedules.json"), "utf8"))
   );
   const colors = require(path.join(dir, "colors.js"));
+  const { order, schedules, warnings } = mergeCustomSchedules(schoolId, builtIn, Object.keys(colors));
+
   const config = require(path.join(dir, "config.js"));
   const selectors = require(path.join(dir, "selectors.js"));
   const { createEngine } = require(platformPath);
 
   const { connect, createEvent } = createEngine({ selectors, colors, config });
 
-  return { meta, order, schedules, colors, config, selectors, connect, createEvent };
+  return { meta, order, schedules, warnings, colors, config, selectors, connect, createEvent };
+}
+
+// Appends the schedules this school added through BellForge (see
+// custom-schedules.js) after the built-in ones. A problem with a user-added
+// schedule never stops the built-in schedules from loading: that one
+// schedule is skipped and reported in `warnings` instead.
+function mergeCustomSchedules(schoolId, builtIn, colorKeys) {
+  const order = [...builtIn.order];
+  const schedules = { ...builtIn.schedules };
+  const warnings = [];
+
+  let custom;
+  try {
+    custom = readCustomFile(schoolId);
+  } catch (err) {
+    warnings.push(
+      `Couldn't read your added schedules (${customSchedulesPath(schoolId)}): ${err.message}. ` +
+        `Built-in schedules are still available.`
+    );
+    return { order, schedules, warnings };
+  }
+
+  for (const key of custom.order) {
+    const raw = custom.schedules[key];
+    if (!raw) {
+      warnings.push(`Added schedule "${key}" is listed but missing; skipped.`);
+      continue;
+    }
+    if (schedules[key]) {
+      warnings.push(`Added schedule "${raw.label}" has the same key as a built-in one; skipped.`);
+      continue;
+    }
+    const errors = validateSchedule(raw, colorKeys);
+    if (errors.length > 0) {
+      warnings.push(`Added schedule "${raw.label || key}" is invalid and was skipped: ${errors.join(" ")}`);
+      continue;
+    }
+    schedules[key] = { label: raw.label, events: expandBlocks(raw.blocks) };
+    order.push(key);
+  }
+
+  return { order, schedules, warnings };
 }
 
 module.exports = { listSchools, loadSchool };

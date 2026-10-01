@@ -13,7 +13,7 @@ const subtitle = document.getElementById("subtitle");
 
 let selectedSchoolId = null;
 let unsubscribeStatus = null;
-let scheduleMenu = null; // { schoolName, items: [{key, label, eventCount}] }
+let scheduleMenu = null; // { schoolName, items: [{key, label, eventCount}], colors, warnings }
 let pendingAssignments = [];
 let reviewOrigin = "screen-mode";
 
@@ -159,9 +159,8 @@ async function onConnectClick() {
       showConnectError(menu.error);
       return;
     }
-    scheduleMenu = menu;
+    applyScheduleMenu(menu);
     subtitle.textContent = menu.schoolName;
-    populateScheduleSelect(document.getElementById("single-schedule"), false);
 
     showScreen("screen-mode");
   } catch (err) {
@@ -175,6 +174,27 @@ async function onConnectClick() {
 }
 
 // --- schedule select helper --------------------------------------------
+
+// Takes a fresh menu from the main process (after connecting, or after the
+// builder saves a new schedule) and refreshes everything that lists
+// schedules or colors.
+function applyScheduleMenu(menu) {
+  scheduleMenu = menu;
+  populateScheduleSelect(document.getElementById("single-schedule"), false);
+
+  const colorSelect = document.getElementById("block-color");
+  colorSelect.innerHTML = "";
+  for (const color of menu.colors) {
+    const opt = document.createElement("option");
+    opt.value = color;
+    opt.textContent = color;
+    colorSelect.appendChild(opt);
+  }
+
+  const warningsBox = document.getElementById("mode-warnings");
+  warningsBox.textContent = menu.warnings.join("\n");
+  warningsBox.hidden = menu.warnings.length === 0;
+}
 
 function populateScheduleSelect(selectEl, includeBlank) {
   selectEl.innerHTML = "";
@@ -199,6 +219,11 @@ document.getElementById("mode-single").addEventListener("click", () => {
 });
 document.getElementById("mode-range").addEventListener("click", () => {
   showScreen("screen-range");
+});
+document.getElementById("mode-build").addEventListener("click", () => {
+  document.getElementById("mode-notice").hidden = true;
+  showScreen("screen-builder");
+  validateBlockForm();
 });
 document.querySelectorAll(".back-link[data-back]").forEach((btn) => {
   btn.addEventListener("click", () => showScreen(btn.dataset.back));
@@ -297,6 +322,194 @@ document.getElementById("range-review-btn").addEventListener("click", () => {
   reviewOrigin = "screen-range";
   showReview();
 });
+
+// --- schedule builder -------------------------------------------------------
+// The renderer only collects input. Every rule (title length, time format,
+// colors, ordering) is checked by the main process through
+// engine/schedule-expand.js, the same code that loads schedules.
+
+const builderBlocks = []; // [{ title, start, end?, color, details }]
+const blockInputs = {
+  title: document.getElementById("block-title"),
+  details: document.getElementById("block-details"),
+  start: document.getElementById("block-start"),
+  end: document.getElementById("block-end"),
+  color: document.getElementById("block-color"),
+};
+const pointCheckbox = document.getElementById("block-point");
+const blockAddBtn = document.getElementById("block-add-btn");
+const touched = new Set(); // fields the user has edited, so errors don't show on a blank form
+let validationSeq = 0;
+
+function readBlockForm() {
+  const block = {
+    title: blockInputs.title.value,
+    start: blockInputs.start.value,
+    color: blockInputs.color.value,
+    details: blockInputs.details.value,
+  };
+  if (!pointCheckbox.checked) block.end = blockInputs.end.value;
+  return block;
+}
+
+async function validateBlockForm() {
+  const seq = ++validationSeq;
+  const { errors } = await window.api.validateBlock(readBlockForm());
+  if (seq !== validationSeq) return; // a newer keystroke already re-validated
+
+  // Red borders only on fields the user has edited; once they've started a
+  // block, list everything still missing so a disabled Add is never a mystery.
+  for (const [field, input] of Object.entries(blockInputs)) {
+    input.classList.toggle("invalid", errors.some((e) => e.field === field && touched.has(field)));
+  }
+  document.getElementById("block-errors").textContent =
+    touched.size > 0 ? errors.map((e) => e.message).join(" ") : "";
+  blockAddBtn.disabled = errors.length > 0;
+}
+
+for (const [field, input] of Object.entries(blockInputs)) {
+  input.addEventListener("input", () => {
+    touched.add(field);
+    validateBlockForm();
+  });
+}
+pointCheckbox.addEventListener("change", () => {
+  blockInputs.end.disabled = pointCheckbox.checked;
+  validateBlockForm();
+});
+
+function renderBuilderBlocks() {
+  const list = document.getElementById("builder-blocks");
+  list.innerHTML = "";
+  if (builderBlocks.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "No blocks yet. Add the first one below.";
+    list.appendChild(empty);
+    return;
+  }
+
+  builderBlocks.forEach((block, i) => {
+    const row = document.createElement("div");
+    row.className = "block-item";
+
+    const time = document.createElement("span");
+    time.className = "block-time";
+    time.textContent = block.end !== undefined ? `${block.start}-${block.end}` : `${block.start} (point)`;
+
+    const text = document.createElement("span");
+    text.className = "block-text";
+    text.textContent = `${block.title} · ${block.color}${block.details ? ` · ${block.details}` : ""}`;
+    text.title = text.textContent;
+
+    const remove = document.createElement("button");
+    remove.className = "block-remove";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => {
+      builderBlocks.splice(i, 1);
+      renderBuilderBlocks();
+    });
+
+    row.append(time, text, remove);
+    list.appendChild(row);
+  });
+}
+
+// Blocks are kept sorted by start time, so the list always reads in the
+// order the bells will ring.
+function addBuilderBlock(block) {
+  const clean = { ...block, title: block.title.trim(), details: block.details.trim() };
+  const at = builderBlocks.findIndex((b) => b.start > clean.start);
+  builderBlocks.splice(at === -1 ? builderBlocks.length : at, 0, clean);
+  renderBuilderBlocks();
+}
+
+blockAddBtn.addEventListener("click", async () => {
+  const block = readBlockForm();
+  const { errors } = await window.api.validateBlock(block);
+  if (errors.length > 0) return;
+  addBuilderBlock(block);
+
+  // Next block usually starts right after this one, so keep the color and
+  // move the start time on; clear the rest.
+  blockInputs.title.value = "";
+  blockInputs.details.value = "";
+  blockInputs.start.value = block.end || block.start;
+  blockInputs.end.value = "";
+  pointCheckbox.checked = false;
+  blockInputs.end.disabled = false;
+  touched.clear();
+  validateBlockForm();
+  blockInputs.title.focus();
+});
+
+function showBuilderError(messages) {
+  const box = document.getElementById("builder-error");
+  box.textContent = messages.join("\n");
+  box.hidden = messages.length === 0;
+}
+
+document.getElementById("builder-preview-btn").addEventListener("click", async () => {
+  const label = document.getElementById("builder-label").value;
+  const result = await window.api.previewSchedule(label, builderBlocks);
+  if (!result.ok) {
+    showBuilderError(result.errors);
+    return;
+  }
+  showBuilderError([]);
+
+  document.getElementById("preview-heading").textContent =
+    `${label.trim()}: ${result.events.length} bells`;
+  const list = document.getElementById("preview-list");
+  list.innerHTML = "";
+  for (const event of result.events) {
+    const row = document.createElement("div");
+    const isAuto = event.color === "Grey" && (event.title === "Pass" || event.title === "Dismissal");
+    row.className = isAuto ? "review-item auto" : "review-item";
+    const left = document.createElement("span");
+    left.textContent = `${event.start}  ${event.title}`;
+    const right = document.createElement("span");
+    right.className = "review-schedule";
+    right.textContent = `${event.color} · ${event.details}`;
+    row.append(left, right);
+    list.appendChild(row);
+  }
+  document.getElementById("preview-error").hidden = true;
+  showScreen("screen-builder-preview");
+});
+
+document.getElementById("builder-save-btn").addEventListener("click", async () => {
+  const saveBtn = document.getElementById("builder-save-btn");
+  const label = document.getElementById("builder-label").value;
+  saveBtn.disabled = true;
+  try {
+    const result = await window.api.saveSchedule(label, builderBlocks);
+    if (!result.ok) {
+      const box = document.getElementById("preview-error");
+      box.textContent = result.errors.join("\n");
+      box.hidden = false;
+      return;
+    }
+    applyScheduleMenu(result.menu);
+
+    builderBlocks.length = 0;
+    renderBuilderBlocks();
+    document.getElementById("builder-label").value = "";
+    for (const input of Object.values(blockInputs)) {
+      if (input.tagName === "INPUT") input.value = "";
+    }
+    touched.clear();
+
+    const notice = document.getElementById("mode-notice");
+    notice.textContent = `Saved "${label.trim()}". It's now in the schedule list.`;
+    notice.hidden = false;
+    showScreen("screen-mode");
+  } finally {
+    saveBtn.disabled = false;
+  }
+});
+
+renderBuilderBlocks();
 
 // --- review screen ---------------------------------------------------------
 

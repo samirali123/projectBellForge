@@ -163,6 +163,7 @@ CyberDataAutomation/
 │   ├── bells.js                 entry point — interactive CLI (school picker, menu, dates, progress)
 │   ├── school-loader.js         discovers schools/, loads one school's full config + a ready engine
 │   ├── schedule-expand.js       turns a schedule's authored blocks into events (adds Pass/Dismissal)
+│   ├── custom-schedules.js      saves/loads schedules added in BellForge (per-user, survives updates)
 │   ├── inspect.js               one-off helper: pick a school, then opens the Playwright Inspector
 │   │                            against that school's real, logged-in page to (re-)confirm selectors
 │   ├── platforms/
@@ -180,6 +181,24 @@ CyberDataAutomation/
         ├── config.js             this school's CDP port, device IP, delays, retries, audio file
         └── selectors.js          this school's confirmed page locators (see inspect.js)
 ```
+
+## Adding schedule types
+
+In BellForge, after connecting, choose **New schedule type**. Name it, add
+its blocks (title, color, start and end time, or tick "point event" for a
+single bell with no end), then **Preview** to see every bell that will be
+created, including the automatic Pass and Dismissal bells, before saving.
+
+Schedules added this way are saved per user, outside the app itself, so
+installing an app update never removes them:
+
+- macOS: `~/Library/Application Support/BellForge/schools/<school>/custom-schedules.json`
+- Windows: `%APPDATA%\BellForge\schools\<school>\custom-schedules.json`
+
+They appear after the built-in schedules in both BellForge and the CLI.
+If that file is ever damaged or hand-edited into an invalid state, the
+affected schedules are skipped with a warning; the built-in schedules
+always still load.
 
 ## School passwords
 

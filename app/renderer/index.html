@@ -49,7 +49,13 @@
           <span class="mode-title">Date range</span>
           <span class="mode-desc">Assign a schedule to every date in a range</span>
         </button>
+        <button id="mode-build" class="mode-btn wide">
+          <span class="mode-title">New schedule type</span>
+          <span class="mode-desc">Build a schedule that isn't in the list yet</span>
+        </button>
       </div>
+      <div id="mode-notice" class="notice" hidden></div>
+      <div id="mode-warnings" class="error" hidden></div>
     </section>
 
     <!-- Screen 3: single day -->
@@ -87,6 +93,68 @@
         </table>
         <button id="range-review-btn">Review</button>
       </div>
+    </section>
+
+    <!-- Screen: schedule builder -->
+    <section id="screen-builder" class="screen" hidden>
+      <button class="back-link" data-back="screen-mode">&larr; Back</button>
+      <label class="field">
+        <span>Schedule name</span>
+        <input id="builder-label" type="text" placeholder="e.g. Spring Pep Rally" />
+      </label>
+
+      <p class="section-label">Blocks</p>
+      <div id="builder-blocks" class="builder-blocks"></div>
+
+      <div class="builder-form">
+        <p class="section-label">Add a block</p>
+        <div class="builder-row">
+          <label class="field">
+            <span>Title</span>
+            <input id="block-title" type="text" placeholder="e.g. M1" />
+          </label>
+          <label class="field">
+            <span>Color</span>
+            <select id="block-color"></select>
+          </label>
+        </div>
+        <label class="field">
+          <span>Details (optional)</span>
+          <input id="block-details" type="text" placeholder="Defaults to the title" />
+        </label>
+        <div class="builder-row">
+          <label class="field">
+            <span>Start time</span>
+            <input id="block-start" type="time" />
+          </label>
+          <label class="field">
+            <span>End time</span>
+            <input id="block-end" type="time" />
+          </label>
+        </div>
+        <label class="checkbox">
+          <input id="block-point" type="checkbox" />
+          <span>This is a point event, no end time</span>
+        </label>
+        <div id="block-errors" class="field-errors"></div>
+        <button id="block-add-btn" disabled>Add Block</button>
+      </div>
+
+      <div id="builder-error" class="error" hidden></div>
+      <button id="builder-preview-btn">Preview</button>
+    </section>
+
+    <!-- Screen: schedule builder preview -->
+    <section id="screen-builder-preview" class="screen" hidden>
+      <button class="back-link" data-back="screen-builder">&larr; Back to edit</button>
+      <p class="section-label" id="preview-heading"></p>
+      <p class="hint">
+        These are the exact bells that will be created every time this schedule is used.
+        Pass and Dismissal bells are added automatically.
+      </p>
+      <div id="preview-list" class="review-list"></div>
+      <div id="preview-error" class="error" hidden></div>
+      <button id="builder-save-btn">Save Schedule</button>
     </section>
 
     <!-- Screen 5: review -->

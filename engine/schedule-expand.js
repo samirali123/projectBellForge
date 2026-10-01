@@ -36,6 +36,72 @@ function validateTitle(title) {
   return null;
 }
 
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// Field-level problems with one block, as [{ field, message }]. Used for
+// live validation while typing, for the final save, and when loading
+// user-added schedules, so the rules exist in exactly one place.
+// `colorKeys` is the school's colors.js keys: a block can only use a color
+// CyberData actually has.
+function validateBlock(block, colorKeys) {
+  const errors = [];
+  const titleError = validateTitle(block.title);
+  if (titleError) errors.push({ field: "title", message: "Title must be at least 2 characters." });
+
+  if (!block.start) {
+    errors.push({ field: "start", message: "Start time is required." });
+  } else if (!TIME_RE.test(block.start)) {
+    errors.push({ field: "start", message: "Start time must be HH:MM (24-hour)." });
+  }
+  if (block.end !== undefined) {
+    if (!block.end) {
+      errors.push({ field: "end", message: "End time is required, unless this is a point event." });
+    } else if (!TIME_RE.test(block.end)) {
+      errors.push({ field: "end", message: "End time must be HH:MM (24-hour)." });
+    } else if (TIME_RE.test(block.start || "") && block.end <= block.start) {
+      errors.push({ field: "end", message: "End time must be after the start time." });
+    }
+  }
+
+  if (!colorKeys.includes(block.color)) {
+    errors.push({ field: "color", message: `Color must be one of: ${colorKeys.join(", ")}.` });
+  }
+  if (block.details !== undefined && typeof block.details !== "string") {
+    errors.push({ field: "details", message: "Details must be text." });
+  }
+  return errors;
+}
+
+// Whole-schedule problems, as a list of messages. Blocks must be in time
+// order and must not overlap, since each block's Pass bell fires at its end.
+function validateSchedule({ label, blocks }, colorKeys) {
+  const errors = [];
+  if (typeof label !== "string" || label.trim() === "") errors.push("The schedule needs a name.");
+  if (!Array.isArray(blocks) || blocks.length === 0) {
+    errors.push("Add at least one block.");
+    return errors;
+  }
+
+  blocks.forEach((block, i) => {
+    for (const { message } of validateBlock(block, colorKeys)) {
+      errors.push(`Block ${i + 1} (${block.title || "untitled"}): ${message}`);
+    }
+  });
+  if (errors.length > 0) return errors;
+
+  for (let i = 1; i < blocks.length; i++) {
+    const prev = blocks[i - 1];
+    const prevLast = prev.end !== undefined ? prev.end : prev.start;
+    if (blocks[i].start < prevLast) {
+      errors.push(
+        `Block ${i + 1} (${blocks[i].title}) starts at ${blocks[i].start}, before block ${i} ` +
+          `(${prev.title}) ${prev.end !== undefined ? "ends" : "starts"} at ${prevLast}.`
+      );
+    }
+  }
+  return errors;
+}
+
 function expandBlocks(blocks) {
   const events = [];
   blocks.forEach((block, i) => {
@@ -83,4 +149,11 @@ function expandScheduleFile({ order, schedules: raw }) {
   return { order, schedules };
 }
 
-module.exports = { MIN_TITLE_LENGTH, validateTitle, expandBlocks, expandScheduleFile };
+module.exports = {
+  MIN_TITLE_LENGTH,
+  validateTitle,
+  validateBlock,
+  validateSchedule,
+  expandBlocks,
+  expandScheduleFile,
+};

@@ -255,6 +255,7 @@ async function run() {
     createEvent = school.createEvent;
 
     console.log(`\n${school.meta.name}`);
+    for (const warning of school.warnings) console.log(`Warning: ${warning}`);
 
     const mode = await promptMode(rl);
     if (mode === "single") {

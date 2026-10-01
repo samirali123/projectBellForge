@@ -25,6 +25,8 @@ function resourcePath(...parts) {
 const { listSchools, loadSchool } = require(resourcePath("engine", "school-loader"));
 const { verifyPassword } = require(resourcePath("engine", "school-auth"));
 const { createEvents } = require(resourcePath("engine", "create-events"));
+const { validateBlock, validateSchedule, expandBlocks } = require(resourcePath("engine", "schedule-expand"));
+const { normalizeBlock, saveCustomSchedule } = require(resourcePath("engine", "custom-schedules"));
 
 const CDP_PORT = 9222;
 const EDGE_PROFILE = path.join(os.homedir(), "edge-cyberdata-debug");
@@ -233,6 +235,8 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
       page,
       order: loaded.order,
       schedules: loaded.schedules,
+      warnings: loaded.warnings,
+      colorKeys: Object.keys(loaded.colors),
       createEvent: loaded.createEvent,
     };
 
@@ -243,14 +247,65 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
   }
 });
 
-ipcMain.handle("get-schedule-menu", () => {
-  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+function scheduleMenu() {
   const items = currentSession.order.map((key) => ({
     key,
     label: currentSession.schedules[key].label,
     eventCount: currentSession.schedules[key].events.length,
   }));
-  return { ok: true, schoolName: currentSession.schoolName, items };
+  return {
+    ok: true,
+    schoolName: currentSession.schoolName,
+    items,
+    colors: currentSession.colorKeys,
+    warnings: currentSession.warnings,
+  };
+}
+
+ipcMain.handle("get-schedule-menu", () => {
+  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+  return scheduleMenu();
+});
+
+// --- schedule builder ------------------------------------------------------
+// All validation and expansion happens here in the main process, through
+// engine/schedule-expand.js, so the renderer never has its own copy of the
+// rules that could drift from what the engine enforces.
+
+ipcMain.handle("validate-block", (event, { block }) => {
+  if (!currentSession) return { errors: [{ field: "title", message: "Not connected to a school yet." }] };
+  return { errors: validateBlock(normalizeBlock(block), currentSession.colorKeys) };
+});
+
+ipcMain.handle("preview-schedule", (event, { label, blocks }) => {
+  if (!currentSession) return { ok: false, errors: ["Not connected to a school yet."] };
+  const clean = { label: (label || "").trim(), blocks: (blocks || []).map(normalizeBlock) };
+  const errors = validateSchedule(clean, currentSession.colorKeys);
+  if (errors.length > 0) return { ok: false, errors };
+  return { ok: true, events: expandBlocks(clean.blocks) };
+});
+
+ipcMain.handle("save-schedule", (event, { label, blocks }) => {
+  if (!currentSession) return { ok: false, errors: ["Not connected to a school yet."] };
+  try {
+    const result = saveCustomSchedule(
+      currentSession.schoolId,
+      { label, blocks },
+      { takenKeys: Object.keys(currentSession.schedules), colorKeys: currentSession.colorKeys }
+    );
+    if (!result.ok) return result;
+
+    // Reload so the new schedule goes through exactly the same load path
+    // the CLI and the next app launch will use. Only the schedule data is
+    // swapped in; the live Edge connection is kept.
+    const reloaded = loadSchool(currentSession.schoolId);
+    currentSession.order = reloaded.order;
+    currentSession.schedules = reloaded.schedules;
+    currentSession.warnings = reloaded.warnings;
+    return { ok: true, key: result.key, menu: scheduleMenu() };
+  } catch (err) {
+    return { ok: false, errors: [`Couldn't save: ${err.message}`] };
+  }
 });
 
 ipcMain.handle("create-events", async (event, { assignments }) => {
