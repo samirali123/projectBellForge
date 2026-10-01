@@ -9,7 +9,7 @@ just a map of what's in this folder specifically.
   No Playwright calls, no school data of its own — everything comes from
   `school-loader.js`.
 - **`school-loader.js`** — discovers folders under `../schools/`, and for
-  a chosen school loads its `schedules.js` / `colors.js` / `config.js` /
+  a chosen school loads its `schedules.json` / `colors.js` / `config.js` /
   `selectors.js`, picks the right `platforms/*.js` engine per that
   school's `school.json`, and hands back a ready `{ connect, createEvent }`.
 - **`platforms/cyberdata.js`** — the actual CyberData/InformaCast

@@ -1,6 +1,6 @@
 // config.js
 // Centralized tunable settings. Nothing schedule-specific or
-// selector-specific belongs here — see schedules.js / colors.js and the
+// selector-specific belongs here — see schedules.json / colors.js and the
 // selectors.js instead.
 
 module.exports = {

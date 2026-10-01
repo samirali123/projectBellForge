@@ -1,0 +1,238 @@
+{
+  "order": [
+    "maroon",
+    "gold",
+    "maroonLate1hr",
+    "goldLate1hr",
+    "maroonAmIb",
+    "goldLate1hrPmIb",
+    "maroonPmIb",
+    "goldPmIb",
+    "maroonNoonDismissal",
+    "goldNoonDismissal",
+    "maroonLate2hr",
+    "goldLate2hr",
+    "maroonBrotherhood",
+    "unifiedDay",
+    "maroon12Finals",
+    "maroon34Finals",
+    "goldFinals",
+    "backToSchoolNight"
+  ],
+  "schedules": {
+    "maroon": {
+      "label": "Maroon Day",
+      "blocks": [
+        { "title": "M0", "start": "07:10", "end": "08:00", "color": "Maroon", "details": "Maroon Zero period" },
+        { "title": "M1", "start": "08:10", "end": "09:30", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "MG", "start": "09:35", "end": "09:45", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "M2", "start": "09:50", "end": "11:10", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "Lunch", "start": "11:15", "end": "11:35", "color": "Lunch", "details": "Lunch" },
+        { "title": "M3", "start": "11:40", "end": "13:00", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "13:05", "end": "14:25", "color": "Maroon", "details": "Maroon 4" }
+      ]
+    },
+    "maroonLate1hr": {
+      "label": "Maroon 1-Hour Late Start",
+      "blocks": [
+        { "title": "MM", "start": "07:30", "end": "08:50", "color": "Maroon", "details": "Morning Meeting" },
+        { "title": "M1", "start": "09:10", "end": "10:15", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "MG", "start": "10:20", "end": "10:30", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "M2", "start": "10:35", "end": "11:40", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "Lunch", "start": "11:45", "end": "12:05", "color": "Lunch", "details": "Lunch" },
+        { "title": "M3", "start": "12:10", "end": "13:15", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "13:20", "end": "14:25", "color": "Maroon", "details": "Maroon 4" }
+      ]
+    },
+    "maroonAmIb": {
+      "label": "Maroon (AM/IB)",
+      "blocks": [
+        { "title": "M0", "start": "07:10", "end": "08:00", "color": "Maroon", "details": "Maroon Zero period" },
+        { "title": "M1", "start": "08:10", "end": "09:15", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "MG", "start": "09:20", "end": "09:30", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "M2A", "start": "09:35", "end": "10:05", "color": "Maroon", "details": "Maroon 2A" },
+        { "title": "IB", "start": "10:10", "end": "11:00", "color": "Maroon", "details": "Irish Block" },
+        { "title": "M2B", "start": "11:05", "end": "11:40", "color": "Maroon", "details": "Maroon 2B" },
+        { "title": "Lunch", "start": "11:45", "end": "12:05", "color": "Lunch", "details": "Lunch" },
+        { "title": "M3", "start": "12:10", "end": "13:15", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "13:20", "end": "14:25", "color": "Maroon", "details": "Maroon 4" }
+      ]
+    },
+    "maroonPmIb": {
+      "label": "Maroon (PM/IB)",
+      "blocks": [
+        { "title": "M0", "start": "07:10", "end": "08:00", "color": "Maroon", "details": "Maroon Zero period" },
+        { "title": "M1", "start": "08:10", "end": "09:15", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "MG", "start": "09:20", "end": "09:30", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "M2", "start": "09:35", "end": "10:40", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "M3", "start": "10:45", "end": "11:50", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "Lunch", "start": "11:55", "end": "12:15", "color": "Lunch", "details": "Lunch" },
+        { "title": "M4", "start": "12:20", "end": "13:25", "color": "Maroon", "details": "Maroon 4" },
+        { "title": "IB", "start": "13:30", "end": "14:25", "color": "Maroon", "details": "Irish Block" }
+      ]
+    },
+    "maroonNoonDismissal": {
+      "label": "Maroon Noon Dismissal",
+      "blocks": [
+        { "title": "M0", "start": "07:10", "end": "08:00", "color": "Maroon", "details": "Maroon Zero period" },
+        { "title": "M1", "start": "08:10", "end": "09:00", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "MG", "start": "09:05", "end": "09:15", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "M2", "start": "09:20", "end": "10:10", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "M3", "start": "10:15", "end": "11:05", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "11:10", "end": "12:00", "color": "Maroon", "details": "Maroon 4" }
+      ]
+    },
+    "maroonLate2hr": {
+      "label": "Maroon 2-Hour Late Start",
+      "blocks": [
+        { "title": "M1", "start": "10:10", "end": "11:00", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "MG", "start": "11:05", "end": "11:15", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "M2", "start": "11:20", "end": "12:10", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "Lunch", "start": "12:15", "end": "12:35", "color": "Lunch", "details": "Lunch" },
+        { "title": "M3", "start": "12:40", "end": "13:30", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "13:35", "end": "14:25", "color": "Maroon", "details": "Maroon 4" }
+      ]
+    },
+    "maroonBrotherhood": {
+      "label": "Maroon Brotherhood Block",
+      "blocks": [
+        { "title": "M0", "start": "07:10", "end": "08:00", "color": "Maroon", "details": "Maroon Zero period" },
+        { "title": "M1", "start": "08:10", "end": "09:20", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "M2", "start": "09:25", "end": "10:35", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "BB", "start": "10:40", "end": "11:30", "color": "Maroon", "details": "Brotherhood Block & Mentor Group" },
+        { "title": "Lunch", "start": "11:35", "end": "11:55", "color": "Lunch", "details": "Lunch" },
+        { "title": "M3", "start": "12:00", "end": "13:10", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "13:15", "end": "14:25", "color": "Maroon", "details": "Maroon 4" }
+      ]
+    },
+    "gold": {
+      "label": "Gold Day",
+      "blocks": [
+        { "title": "G0", "start": "07:10", "end": "08:00", "color": "Gold", "details": "Gold Zero period" },
+        { "title": "G1", "start": "08:10", "end": "09:30", "color": "Gold", "details": "Gold 1" },
+        { "title": "MG", "start": "09:35", "end": "10:05", "color": "Gold", "details": "Mentor Group" },
+        { "title": "IB", "start": "10:10", "end": "11:10", "color": "Gold", "details": "Irish Block" },
+        { "title": "Lunch", "start": "11:15", "end": "11:35", "color": "Lunch", "details": "Lunch" },
+        { "title": "G2", "start": "11:40", "end": "13:00", "color": "Gold", "details": "Gold 2" },
+        { "title": "G3", "start": "13:05", "end": "14:25", "color": "Gold", "details": "Gold 3" }
+      ]
+    },
+    "goldLate1hr": {
+      "label": "Gold 1-Hour Late Start",
+      "blocks": [
+        { "title": "MM", "start": "07:30", "end": "08:50", "color": "Gold", "details": "Morning Meeting" },
+        { "title": "G1", "start": "09:10", "end": "10:15", "color": "Gold", "details": "Gold 1" },
+        { "title": "MG", "start": "10:20", "end": "10:50", "color": "Gold", "details": "Mentor Group" },
+        { "title": "IB", "start": "10:55", "end": "11:40", "color": "Gold", "details": "Irish Block" },
+        { "title": "Lunch", "start": "11:45", "end": "12:05", "color": "Lunch", "details": "Lunch" },
+        { "title": "G2", "start": "12:10", "end": "13:15", "color": "Gold", "details": "Gold 2" },
+        { "title": "G3", "start": "13:20", "end": "14:25", "color": "Gold", "details": "Gold 3" }
+      ]
+    },
+    "goldLate1hrPmIb": {
+      "label": "Gold 1-Hour Late Start (PM/IB)",
+      "blocks": [
+        { "title": "FM", "start": "07:30", "end": "08:50", "color": "Gold", "details": "Faculty Meeting" },
+        { "title": "G1", "start": "09:10", "end": "10:15", "color": "Gold", "details": "Gold 1" },
+        { "title": "MG", "start": "10:20", "end": "10:50", "color": "Gold", "details": "Mentor Group" },
+        { "title": "G2", "start": "10:55", "end": "12:00", "color": "Gold", "details": "Gold 2" },
+        { "title": "Lunch", "start": "12:05", "end": "12:25", "color": "Lunch", "details": "Lunch" },
+        { "title": "G3", "start": "12:30", "end": "13:35", "color": "Gold", "details": "Gold 3" },
+        { "title": "IB", "start": "13:40", "end": "14:25", "color": "Gold", "details": "Irish Block" }
+      ]
+    },
+    "goldPmIb": {
+      "label": "Gold (PM/IB)",
+      "blocks": [
+        { "title": "G0", "start": "07:10", "end": "08:00", "color": "Gold", "details": "Gold Zero period" },
+        { "title": "G1", "start": "08:10", "end": "09:30", "color": "Gold", "details": "Gold 1" },
+        { "title": "MG", "start": "09:35", "end": "10:05", "color": "Gold", "details": "Mentor Group" },
+        { "title": "G2", "start": "10:10", "end": "11:30", "color": "Gold", "details": "Gold 2" },
+        { "title": "Lunch", "start": "11:35", "end": "11:55", "color": "Lunch", "details": "Lunch" },
+        { "title": "G3", "start": "12:00", "end": "13:20", "color": "Gold", "details": "Gold 3" },
+        { "title": "IB", "start": "13:25", "end": "14:25", "color": "Gold", "details": "Irish Block" }
+      ]
+    },
+    "goldNoonDismissal": {
+      "label": "Gold Noon Dismissal",
+      "blocks": [
+        { "title": "G1", "start": "08:10", "end": "09:15", "color": "Gold", "details": "Gold 1" },
+        { "title": "MG", "start": "09:20", "end": "09:40", "color": "Gold", "details": "Mentor Group" },
+        { "title": "G2", "start": "09:45", "end": "10:50", "color": "Gold", "details": "Gold 2" },
+        { "title": "G3", "start": "10:55", "end": "12:00", "color": "Gold", "details": "Gold 3" }
+      ]
+    },
+    "goldLate2hr": {
+      "label": "Gold 2-Hour Late Start",
+      "blocks": [
+        { "title": "G1", "start": "10:10", "end": "11:20", "color": "Gold", "details": "Gold 1" },
+        { "title": "MG", "start": "11:25", "end": "11:35", "color": "Gold", "details": "Mentor Group" },
+        { "title": "Lunch", "start": "11:40", "end": "12:00", "color": "Lunch", "details": "Lunch" },
+        { "title": "G2", "start": "12:05", "end": "13:15", "color": "Gold", "details": "Gold 2" },
+        { "title": "G3", "start": "13:20", "end": "14:25", "color": "Gold", "details": "Gold 3" }
+      ]
+    },
+    "unifiedDay": {
+      "label": "Unified Day",
+      "blocks": [
+        { "title": "M1", "start": "08:10", "end": "08:35", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "M2", "start": "08:40", "end": "09:05", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "M3", "start": "09:10", "end": "09:35", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "09:40", "end": "10:05", "color": "Maroon", "details": "Maroon 4" },
+        { "title": "G1", "start": "10:10", "end": "10:35", "color": "Gold", "details": "Gold 1" },
+        { "title": "G2", "start": "10:40", "end": "11:05", "color": "Gold", "details": "Gold 2" },
+        { "title": "G3", "start": "11:10", "end": "11:35", "color": "Gold", "details": "Gold 3" },
+        { "title": "PS", "start": "11:40", "end": "12:00", "color": "Black", "details": "Prayer Service/Mentor Group" }
+      ]
+    },
+    "maroon12Finals": {
+      "label": "Maroon 1 & 2 Finals",
+      "blocks": [
+        { "title": "SRC", "start": "07:00", "end": "08:00", "color": "Maroon", "details": "SRC Open Study Hall" },
+        { "title": "IB", "start": "08:10", "end": "09:40", "color": "Maroon", "details": "Irish Block" },
+        { "title": "M1F", "start": "09:45", "end": "11:15", "color": "Maroon", "details": "Maroon 1 Final" },
+        { "title": "Lunch", "start": "11:20", "end": "11:45", "color": "Lunch", "details": "Lunch" },
+        { "title": "M2F", "start": "11:50", "end": "13:20", "color": "Maroon", "details": "Maroon 2 Final" },
+        { "title": "SRC", "start": "13:25", "end": "15:00", "color": "Maroon", "details": "SRC Open Study Hall" }
+      ]
+    },
+    "maroon34Finals": {
+      "label": "Maroon 3 & 4 Finals",
+      "blocks": [
+        { "title": "SRC", "start": "07:00", "end": "08:00", "color": "Maroon", "details": "SRC Open Study Hall" },
+        { "title": "IB", "start": "08:10", "end": "09:40", "color": "Maroon", "details": "Irish Block" },
+        { "title": "M3F", "start": "09:45", "end": "11:15", "color": "Maroon", "details": "Maroon 3 Final" },
+        { "title": "Lunch", "start": "11:20", "end": "11:45", "color": "Lunch", "details": "Lunch" },
+        { "title": "M4F", "start": "11:50", "end": "13:20", "color": "Maroon", "details": "Maroon 4 Final" },
+        { "title": "SRC", "start": "13:25", "end": "15:00", "color": "Maroon", "details": "SRC Open Study Hall" }
+      ]
+    },
+    "goldFinals": {
+      "label": "Gold Finals",
+      "blocks": [
+        { "title": "SRC", "start": "07:00", "end": "08:00", "color": "Gold", "details": "SRC Open Study Hall" },
+        { "title": "G1F", "start": "08:10", "end": "09:40", "color": "Gold", "details": "Gold 1 Final" },
+        { "title": "G2F", "start": "09:45", "end": "11:15", "color": "Gold", "details": "Gold 2 Final" },
+        { "title": "Lunch", "start": "11:20", "end": "11:45", "color": "Lunch", "details": "Lunch" },
+        { "title": "G3F", "start": "11:50", "end": "13:20", "color": "Gold", "details": "Gold 3 Final" },
+        { "title": "SRC", "start": "13:25", "end": "15:00", "color": "Gold", "details": "SRC Open Study Hall" }
+      ]
+    },
+    "backToSchoolNight": {
+      "label": "Back-to-School Night",
+      "blocks": [
+        { "title": "SFN", "start": "17:30", "color": "Grey", "details": "Senior Family Night (SRC)" },
+        { "title": "Welcome", "start": "18:00", "color": "Grey", "details": "Principal's Welcome (Gym)" },
+        { "title": "MG", "start": "18:30", "end": "18:37", "color": "Maroon", "details": "Mentor Group" },
+        { "title": "G1", "start": "18:41", "end": "18:48", "color": "Gold", "details": "Gold 1" },
+        { "title": "G2", "start": "18:52", "end": "18:59", "color": "Gold", "details": "Gold 2" },
+        { "title": "G3", "start": "19:03", "end": "19:10", "color": "Gold", "details": "Gold 3" },
+        { "title": "M1", "start": "19:14", "end": "19:21", "color": "Maroon", "details": "Maroon 1" },
+        { "title": "M2", "start": "19:25", "end": "19:32", "color": "Maroon", "details": "Maroon 2" },
+        { "title": "M3", "start": "19:36", "end": "19:43", "color": "Maroon", "details": "Maroon 3" },
+        { "title": "M4", "start": "19:47", "end": "19:54", "color": "Maroon", "details": "Maroon 4" },
+        { "title": "ZP", "start": "19:58", "end": "20:05", "color": "Maroon", "details": "Zero Period" }
+      ]
+    }
+  }
+}

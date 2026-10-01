@@ -2,12 +2,13 @@
 //
 // Discovers and loads schools from ../schools/<id>/. A school is a plain
 // folder — school.json (id, display name, which platform engine it uses),
-// plus schedules.js / colors.js / config.js / selectors.js in the same
+// plus schedules.json / colors.js / config.js / selectors.js in the same
 // shape as schools/odea. No database, no server — adding a school means
 // adding a folder.
 
 const fs = require("fs");
 const path = require("path");
+const { expandScheduleFile } = require("./schedule-expand");
 
 const SCHOOLS_DIR = path.join(__dirname, "..", "schools");
 const PLATFORMS_DIR = path.join(__dirname, "platforms");
@@ -47,7 +48,11 @@ function loadSchool(schoolId) {
     );
   }
 
-  const { order, schedules } = require(path.join(dir, "schedules.js"));
+  // schedules.json holds authored blocks only; Pass/Dismissal triggers are
+  // derived here, at load time (see schedule-expand.js).
+  const { order, schedules } = expandScheduleFile(
+    JSON.parse(fs.readFileSync(path.join(dir, "schedules.json"), "utf8"))
+  );
   const colors = require(path.join(dir, "colors.js"));
   const config = require(path.join(dir, "config.js"));
   const selectors = require(path.join(dir, "selectors.js"));

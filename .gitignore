@@ -1,3 +1,5 @@
 node_modules/
 .DS_Store
 dist/
+CLAUDE.md
+SCHEDULE_AUTHORING_PLAN.md

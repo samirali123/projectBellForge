@@ -162,6 +162,7 @@ CyberDataAutomation/
 ├── engine/                     school-agnostic app code
 │   ├── bells.js                 entry point — interactive CLI (school picker, menu, dates, progress)
 │   ├── school-loader.js         discovers schools/, loads one school's full config + a ready engine
+│   ├── schedule-expand.js       turns a schedule's authored blocks into events (adds Pass/Dismissal)
 │   ├── inspect.js               one-off helper: pick a school, then opens the Playwright Inspector
 │   │                            against that school's real, logged-in page to (re-)confirm selectors
 │   ├── platforms/
@@ -173,7 +174,8 @@ CyberDataAutomation/
 └── schools/
     └── odea/                    one folder per school
         ├── school.json           { id, name, platform, passwordSalt, passwordHash } — see "School passwords"
-        ├── schedules.js          this school's real bell times for every schedule type, plus menu order
+        ├── schedules.json        this school's real bell times (as blocks) for every schedule type, plus menu order
+        ├── schedules.notes.md    where those bell times came from
         ├── colors.js             semantic color name -> this school's color-picker button label
         ├── config.js             this school's CDP port, device IP, delays, retries, audio file
         └── selectors.js          this school's confirmed page locators (see inspect.js)
@@ -211,9 +213,12 @@ treat it as stronger than it is.
 3. Run `node engine/set-school-password.js` and set this school's password.
 4. Edit `config.js` — this school's device IP (`cyberDataHost`) and audio
    file name at minimum.
-5. Hand-author `schedules.js` with this school's real bell times (see the
-   comments in `schools/odea/schedules.js` for the data shape and the
-   `order` array that controls menu display order).
+5. Hand-author `schedules.json` with this school's real bell times. Each
+   schedule is a list of blocks (`title`, `start`, `end`, `color`,
+   `details`); leave out `end` for a standalone point event. Pass and
+   Dismissal triggers are added automatically, so don't list them. The
+   `order` array controls menu display order. See
+   `schools/odea/schedules.json` and `engine/schedule-expand.js`.
 6. Launch Edge with remote debugging, log into this school's CyberData,
    then run `node engine/inspect.js` and pick the new school — use "Pick
    locator" against its real New Event dialog to confirm/correct

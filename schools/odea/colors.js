@@ -1,6 +1,6 @@
 // colors.js
 //
-// Maps the semantic color names used in schedules.js to the value
+// Maps the semantic color names used in schedules.json to the value
 // CyberData's color <select> dropdown expects.
 //
 // The New Event form's raw HTTP field takes a hex value (see
