@@ -12,10 +12,9 @@
   --bg: #f4f4f6;
   --card-bg: #ffffff;
   --text: #1a1a1e;
-  --muted: #6b6b74;
+  --muted: #64646d;
   --border: #e2e2e7;
   --accent: #7a1f2b;
-  --accent-hover: #641822;
   --danger: #c0392b;
   --danger-bg: #fdecea;
   --ok: #17703d;
@@ -25,9 +24,29 @@
      which is a button fill: the dark-mode accent is too dark to read as
      text on the dark background. */
   --link: var(--accent);
-  /* Fill behind white text on destructive buttons. Separate from
-     --danger, which in dark mode is a light red meant for text. */
-  --danger-fill: #c0392b;
+
+  /* Surface treatment. One gradient direction and palette for every
+     primary action; one glass recipe for the main panel. White text is
+     checked against the lightest stop of each gradient (AA), and text on
+     the glass is checked where the backdrop is most saturated. */
+  --gradient-primary: linear-gradient(135deg, #7a1f2b 0%, #a8343f 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #641822 0%, #922c36 100%);
+  --gradient-danger: linear-gradient(135deg, #c0392b 0%, #a52f23 100%);
+  --gradient-danger-hover: linear-gradient(135deg, #a52f23 0%, #8e271d 100%);
+  --glow-primary: 0 4px 14px rgba(122, 31, 43, 0.28);
+  --glow-primary-hover: 0 6px 20px rgba(122, 31, 43, 0.38);
+  --glow-danger: 0 4px 14px rgba(192, 57, 43, 0.3);
+  --glow-card: 0 0 0 3px rgba(122, 31, 43, 0.12);
+
+  --backdrop:
+    radial-gradient(circle at 12% 8%, rgba(122, 31, 43, 0.22), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(212, 167, 44, 0.24), transparent 48%),
+    var(--bg);
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 8px 32px rgba(40, 20, 30, 0.1);
+  --glass-blur: blur(24px) saturate(160%);
+  --radius-card: 16px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,11 +57,25 @@
     --muted: #97979f;
     --border: #303038;
     --accent: #b0333f;
-    --accent-hover: #c23a47;
     --danger: #e57368;
     --danger-bg: #3a1f1d;
     --ok: #4ecb84;
     --link: #e0707a;
+
+    --gradient-primary: linear-gradient(135deg, #a12d39 0%, #c4404b 100%);
+    --gradient-primary-hover: linear-gradient(135deg, #8f2632 0%, #b03a44 100%);
+    --glow-primary: 0 4px 16px rgba(196, 64, 75, 0.32);
+    --glow-primary-hover: 0 6px 22px rgba(196, 64, 75, 0.45);
+    --glow-danger: 0 4px 16px rgba(192, 57, 43, 0.35);
+    --glow-card: 0 0 0 3px rgba(224, 112, 122, 0.16);
+
+    --backdrop:
+      radial-gradient(circle at 12% 8%, rgba(176, 51, 63, 0.24), transparent 42%),
+      radial-gradient(circle at 88% 92%, rgba(212, 167, 44, 0.16), transparent 48%),
+      var(--bg);
+    --glass-bg: rgba(30, 30, 36, 0.62);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -58,7 +91,9 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  padding: var(--space-4);
+  background: var(--backdrop);
+  background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -72,6 +107,12 @@ body {
 .card {
   width: 100%;
   max-width: 416px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: var(--space-6);
   display: flex;
   flex-direction: column;
@@ -159,27 +200,35 @@ input:focus {
   color: var(--danger);
 }
 
+/* Plain <button> is the primary action. Variants (.secondary, .link-btn,
+   .back-link, .mode-btn, row actions) override background and shadow.
+   The hover/disabled rules use :where() so they carry no more weight than
+   a bare element selector; otherwise they'd beat every variant's own
+   hover (that was turning hovered mode cards solid maroon). */
 button {
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: var(--accent);
+  background: var(--gradient-primary);
   border: none;
   border-radius: 8px;
   padding: var(--space-3);
   cursor: pointer;
-  transition: background 0.15s ease;
+  box-shadow: var(--glow-primary);
+  transition: box-shadow 0.15s ease;
   margin-top: var(--space-1);
 }
 
-button:hover:not(:disabled) {
-  background: var(--accent-hover);
+button:where(:hover:not(:disabled)) {
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--glow-primary-hover);
 }
 
 button:disabled {
   opacity: 0.45;
   cursor: default;
+  box-shadow: none;
 }
 
 .error {
@@ -249,6 +298,7 @@ button:disabled {
   padding: 0;
   margin: 0;
   cursor: pointer;
+  box-shadow: none;
 }
 
 .back-link:hover {
@@ -275,11 +325,14 @@ button:disabled {
   text-align: left;
   cursor: pointer;
   margin: 0;
+  box-shadow: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .mode-btn:hover {
   background: var(--card-bg);
-  border-color: var(--accent);
+  border-color: var(--link);
+  box-shadow: var(--glow-card);
 }
 
 .mode-title {
@@ -462,6 +515,7 @@ button:disabled {
 
 .block-item .block-remove {
   background: none;
+  box-shadow: none;
   color: var(--danger);
   font-size: 12px;
   padding: var(--space-1);
@@ -543,6 +597,7 @@ input:disabled {
 
 button.secondary {
   background: var(--card-bg);
+  box-shadow: none;
   color: var(--text);
   border: 1px solid var(--border);
   margin: 0;
@@ -552,11 +607,13 @@ button.secondary {
 
 button.secondary:hover:not(:disabled) {
   background: var(--card-bg);
-  border-color: var(--accent);
+  border-color: var(--link);
+  box-shadow: none;
 }
 
 button.link-btn {
   background: none;
+  box-shadow: none;
   color: var(--link);
   font-size: 13px;
   padding: 0;
@@ -565,6 +622,7 @@ button.link-btn {
 
 button.link-btn:hover:not(:disabled) {
   background: none;
+  box-shadow: none;
   text-decoration: underline;
 }
 
@@ -573,19 +631,20 @@ button.link-btn:hover:not(:disabled) {
 }
 
 .block-item .block-confirm {
-  background: var(--danger-fill);
+  background: var(--gradient-danger);
+  box-shadow: var(--glow-danger);
   font-size: 12px;
   padding: var(--space-1) var(--space-2);
   margin: 0;
 }
 
 .block-item .block-confirm:hover:not(:disabled) {
-  background: var(--danger-fill);
-  filter: brightness(1.1);
+  background: var(--gradient-danger-hover);
 }
 
 .block-item .block-cancel {
   background: none;
+  box-shadow: none;
   color: var(--muted);
   font-size: 12px;
   padding: var(--space-1);
