@@ -443,6 +443,54 @@ blockAddBtn.addEventListener("click", async () => {
   blockInputs.title.focus();
 });
 
+function showImportNotice(text) {
+  const notice = document.getElementById("import-notice");
+  notice.textContent = text;
+  notice.hidden = !text;
+}
+
+// Import only fills the block list, the same list the manual form adds
+// to. The user can keep adding or removing blocks, and saving still goes
+// through Preview.
+document.getElementById("import-csv-btn").addEventListener("click", async () => {
+  showImportNotice("");
+  const result = await window.api.importScheduleCsv();
+  if (result.canceled) return;
+  if (!result.ok) {
+    showBuilderError(["Nothing was imported. Fix these and import again:", ...result.errors]);
+    return;
+  }
+  showBuilderError([]);
+  for (const block of result.blocks) {
+    addBuilderBlock({ ...block, details: block.details || "" });
+  }
+  const labelInput = document.getElementById("builder-label");
+  if (!labelInput.value.trim()) {
+    // "spring_pep-rally" -> "Spring Pep Rally"
+    labelInput.value = result.fileName
+      .split(/[-_\s]+/)
+      .filter(Boolean)
+      .map((w) => w[0].toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+  showImportNotice(
+    `Imported ${result.blocks.length} block${result.blocks.length === 1 ? "" : "s"} from ` +
+      `${result.fileName}.csv. Check them above, then Preview.`
+  );
+});
+
+document.getElementById("csv-template-btn").addEventListener("click", async () => {
+  showImportNotice("");
+  const result = await window.api.saveCsvTemplate();
+  if (result.canceled) return;
+  if (!result.ok) {
+    showBuilderError([result.error]);
+    return;
+  }
+  showBuilderError([]);
+  showImportNotice(`Template saved to ${result.filePath}. Fill it in, save it as CSV, then Import CSV.`);
+});
+
 function showBuilderError(messages) {
   const box = document.getElementById("builder-error");
   box.textContent = messages.join("\n");
@@ -494,6 +542,7 @@ document.getElementById("builder-save-btn").addEventListener("click", async () =
 
     builderBlocks.length = 0;
     renderBuilderBlocks();
+    showImportNotice("");
     document.getElementById("builder-label").value = "";
     for (const input of Object.values(blockInputs)) {
       if (input.tagName === "INPUT") input.value = "";

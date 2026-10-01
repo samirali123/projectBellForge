@@ -15,6 +15,8 @@ contextBridge.exposeInMainWorld("api", {
   validateBlock: (block) => ipcRenderer.invoke("validate-block", { block }),
   previewSchedule: (label, blocks) => ipcRenderer.invoke("preview-schedule", { label, blocks }),
   saveSchedule: (label, blocks) => ipcRenderer.invoke("save-schedule", { label, blocks }),
+  importScheduleCsv: () => ipcRenderer.invoke("import-schedule-csv"),
+  saveCsvTemplate: () => ipcRenderer.invoke("save-csv-template"),
 
   onStatus: (callback) => {
     const listener = (event, text) => callback(text);

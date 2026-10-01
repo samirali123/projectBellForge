@@ -6,7 +6,7 @@
 // school's platform engine (connect()/createEvent()) are all reused
 // as-is, not reimplemented here.
 
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const os = require("os");
 const fs = require("fs");
@@ -27,6 +27,7 @@ const { verifyPassword } = require(resourcePath("engine", "school-auth"));
 const { createEvents } = require(resourcePath("engine", "create-events"));
 const { validateBlock, validateSchedule, expandBlocks } = require(resourcePath("engine", "schedule-expand"));
 const { normalizeBlock, saveCustomSchedule } = require(resourcePath("engine", "custom-schedules"));
+const { parseScheduleCsv } = require(resourcePath("engine", "schedule-csv"));
 
 const CDP_PORT = 9222;
 const EDGE_PROFILE = path.join(os.homedir(), "edge-cyberdata-debug");
@@ -283,6 +284,47 @@ ipcMain.handle("preview-schedule", (event, { label, blocks }) => {
   const errors = validateSchedule(clean, currentSession.colorKeys);
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, events: expandBlocks(clean.blocks) };
+});
+
+// Fills the builder's block list from a CSV file. Never saves anything:
+// the blocks go back to the builder and still have to pass Preview.
+ipcMain.handle("import-schedule-csv", async () => {
+  if (!currentSession) return { ok: false, errors: ["Not connected to a school yet."] };
+  const pick = await dialog.showOpenDialog(mainWindow, {
+    title: "Import schedule blocks",
+    filters: [{ name: "CSV", extensions: ["csv"] }],
+    properties: ["openFile"],
+  });
+  if (pick.canceled || pick.filePaths.length === 0) return { ok: false, canceled: true };
+
+  const file = pick.filePaths[0];
+  try {
+    const { blocks, errors } = parseScheduleCsv(fs.readFileSync(file, "utf8"), currentSession.colorKeys);
+    return { ok: errors.length === 0, blocks, errors, fileName: path.basename(file, path.extname(file)) };
+  } catch (err) {
+    return { ok: false, errors: [`Couldn't read ${path.basename(file)}: ${err.message}`] };
+  }
+});
+
+// Saves a copy of this school's pre-filled CSV template wherever the user
+// picks, so they have something to fill out instead of guessing columns.
+ipcMain.handle("save-csv-template", async () => {
+  if (!currentSession) return { ok: false, error: "Not connected to a school yet." };
+  const template = resourcePath("schools", currentSession.schoolId, "schedule-import-template.csv");
+  if (!fs.existsSync(template)) return { ok: false, error: "This school doesn't have a CSV template yet." };
+
+  const pick = await dialog.showSaveDialog(mainWindow, {
+    title: "Save CSV template",
+    defaultPath: path.join(app.getPath("documents"), "schedule-import-template.csv"),
+    filters: [{ name: "CSV", extensions: ["csv"] }],
+  });
+  if (pick.canceled || !pick.filePath) return { ok: false, canceled: true };
+  try {
+    fs.copyFileSync(template, pick.filePath);
+    return { ok: true, filePath: pick.filePath };
+  } catch (err) {
+    return { ok: false, error: `Couldn't save the template: ${err.message}` };
+  }
 });
 
 ipcMain.handle("save-schedule", (event, { label, blocks }) => {

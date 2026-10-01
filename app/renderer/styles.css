@@ -470,6 +470,7 @@ button:disabled {
 input.invalid,
 select.invalid {
   border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger);
 }
 
 input:disabled {
@@ -507,4 +508,37 @@ input:disabled {
 #preview-error,
 #mode-warnings {
   white-space: pre-line;
+}
+
+.import-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button.secondary {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: var(--card-bg);
+  border-color: var(--accent);
+}
+
+button.link-btn {
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  padding: 0;
+  margin: 0;
+}
+
+button.link-btn:hover:not(:disabled) {
+  background: none;
+  text-decoration: underline;
 }

@@ -164,6 +164,7 @@ CyberDataAutomation/
 │   ├── school-loader.js         discovers schools/, loads one school's full config + a ready engine
 │   ├── schedule-expand.js       turns a schedule's authored blocks into events (adds Pass/Dismissal)
 │   ├── custom-schedules.js      saves/loads schedules added in BellForge (per-user, survives updates)
+│   ├── schedule-csv.js          parses a CSV of blocks for the builder's Import CSV
 │   ├── inspect.js               one-off helper: pick a school, then opens the Playwright Inspector
 │   │                            against that school's real, logged-in page to (re-)confirm selectors
 │   ├── platforms/
@@ -177,6 +178,7 @@ CyberDataAutomation/
         ├── school.json           { id, name, platform, passwordSalt, passwordHash } — see "School passwords"
         ├── schedules.json        this school's real bell times (as blocks) for every schedule type, plus menu order
         ├── schedules.notes.md    where those bell times came from
+        ├── schedule-import-template.csv   worked example for the builder's Import CSV
         ├── colors.js             semantic color name -> this school's color-picker button label
         ├── config.js             this school's CDP port, device IP, delays, retries, audio file
         └── selectors.js          this school's confirmed page locators (see inspect.js)
@@ -188,6 +190,14 @@ In BellForge, after connecting, choose **New schedule type**. Name it, add
 its blocks (title, color, start and end time, or tick "point event" for a
 single bell with no end), then **Preview** to see every bell that will be
 created, including the automatic Pass and Dismissal bells, before saving.
+
+To fill in the blocks in Excel or Google Sheets instead, click **Get CSV
+template**, fill it in (columns `title, details, start, end, color`, one
+row per block, `end` left blank for a point event), save it as CSV, then
+click **Import CSV**. Times can be `08:10`, `8:10`, or `8:10 AM`. If any
+row has a problem, nothing is imported and each problem is listed by row
+number. An import only fills the block list; you can still add or remove
+blocks, and saving still goes through Preview.
 
 Schedules added this way are saved per user, outside the app itself, so
 installing an app update never removes them:
