@@ -22,6 +22,7 @@
   "build": {
     "appId": "com.bellforge.app",
     "productName": "BellForge",
+    "afterPack": "../tools/adhoc-sign.js",
     "directories": {
       "output": "dist",
       "buildResources": "build"

@@ -112,9 +112,17 @@ will flag it on first launch:
 
 - **Windows**: SmartScreen shows "Windows protected your PC." Click
   "More info," then "Run anyway."
-- **Mac**: Gatekeeper blocks the first open. Right-click (or Control-click)
-  the app and choose "Open," then confirm in the dialog that appears. After
-  that first approval, it opens normally.
+- **Mac**: the first open shows "Apple could not verify 'BellForge' is free
+  of malware." Click Done, then open System Settings > Privacy & Security,
+  scroll down to the message about BellForge, click "Open Anyway," and
+  confirm. After that first approval, it opens normally. (On macOS 14 and
+  earlier, right-click the app and choose "Open" instead.) The Mac build is
+  for Apple Silicon (M-series) Macs only.
+
+  The Mac app is signed ad hoc (no Apple Developer ID) by
+  `tools/adhoc-sign.js` during the build. Without that, macOS reports a
+  downloaded copy as "damaged and can't be opened" with no way past it.
+  A Developer ID plus notarization would remove the prompt entirely.
 
 The packaged app still needs Microsoft Edge installed on the machine — see
 "Why Edge, not Chrome" below.
