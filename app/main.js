@@ -256,7 +256,7 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
     const reachable = await isSchoolReachable(config);
     if (!reachable) {
       throw new Error(
-        `Can't reach ${config.cyberDataHost} — make sure you're on ${school.name}'s ` +
+        `Can't reach ${config.cyberDataHost}. Make sure you're on ${school.name}'s ` +
           `network or VPN, then try again.`
       );
     }
@@ -269,7 +269,7 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
     // Belt-and-suspenders: Edge was already launched pointed at
     // calendarUrl, so this is normally a no-op. Kept as a fallback in
     // case the launch-argument URL didn't take for some reason.
-    sendStatus("Opening CyberData...");
+    sendStatus("Opening the calendar...");
     await page.goto(config.calendarUrl, { waitUntil: "domcontentloaded" });
 
     currentSession = {
@@ -285,7 +285,7 @@ ipcMain.handle("launch-and-connect", async (event, { schoolId }) => {
       createEvent: loaded.createEvent,
     };
 
-    sendStatus("Ready — log into CyberData in the Edge window, then continue there.");
+    sendStatus("Ready. Log into the calendar in the Edge window, then continue there.");
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };

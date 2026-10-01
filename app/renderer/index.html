@@ -11,7 +11,7 @@
       <div class="header-row">
         <div>
           <h1>BellForge</h1>
-          <p id="subtitle" class="subtitle">CyberData bell schedules</p>
+          <p id="subtitle" class="subtitle" hidden></p>
         </div>
         <div id="theme-switch" class="segmented" role="radiogroup" aria-label="Appearance">
           <button type="button" role="radio" data-theme="system">System</button>
@@ -83,6 +83,7 @@
         <span>Schedule</span>
         <select id="single-schedule"></select>
       </label>
+      <div id="single-error" class="error" hidden></div>
       <button id="single-review-btn">Review</button>
     </section>
 
@@ -99,6 +100,7 @@
           <input id="range-end" type="date" />
         </label>
       </div>
+      <div id="range-error" class="error" hidden></div>
       <button id="range-generate-btn">Generate dates</button>
 
       <div id="range-table-wrap" class="range-table-wrap" hidden>
@@ -168,8 +170,8 @@
       <button class="back-link" data-back="screen-mode">&larr; Back</button>
       <p class="section-label">Schedule types you've added</p>
       <p class="hint">
-        Deleting one removes it from BellForge's list only. Bells already created
-        in CyberData aren't affected. Built-in schedules can't be deleted.
+        Deleting one removes it from BellForge's list only. Events already on the
+        calendar aren't affected. Built-in schedules can't be deleted.
       </p>
       <div id="my-schedules-list" class="builder-blocks"></div>
       <div id="my-schedules-error" class="error" hidden></div>
@@ -180,8 +182,8 @@
       <button class="back-link" data-back="screen-builder">&larr; Back to edit</button>
       <p class="section-label" id="preview-heading"></p>
       <p class="hint">
-        These are the exact bells that will be created every time this schedule is used.
-        Pass and Dismissal bells are added automatically.
+        These are the exact events that will be created every time this schedule is used.
+        Pass and Dismissal events are added automatically.
       </p>
       <div id="preview-list" class="review-list"></div>
       <div id="preview-error" class="error" hidden></div>
@@ -209,7 +211,7 @@
       </div>
       <div id="progress-log" class="log progress-log"></div>
       <div id="progress-summary" class="progress-summary" hidden></div>
-      <button id="progress-done-btn" hidden>Done — start over</button>
+      <button id="progress-done-btn" hidden>Start over</button>
     </section>
   </main>
 

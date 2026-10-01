@@ -142,8 +142,16 @@ async function loadSchools() {
   }
 }
 
+// The line under "BellForge" is just the chosen school's name: nothing
+// platform-specific, since schools may run on different bell systems.
+function setSubtitle(text) {
+  subtitle.textContent = text || "";
+  subtitle.hidden = !text;
+}
+
 async function onSchoolChange() {
   selectedSchoolId = schoolSelect.value || null;
+  setSubtitle(selectedSchoolId ? schoolSelect.selectedOptions[0].textContent : "");
   clearConnectError();
   resetConnectLog();
   connectBtn.disabled = !selectedSchoolId;
@@ -160,7 +168,7 @@ async function onSchoolChange() {
   } else {
     setNetworkStatus(
       "fail",
-      `Can't reach ${result.host || "this school"} — check your network/VPN`
+      `Can't reach ${result.host || "this school"}. Check your network or VPN.`
     );
   }
 }
@@ -217,7 +225,7 @@ async function onConnectClick() {
       return;
     }
     applyScheduleMenu(menu);
-    subtitle.textContent = menu.schoolName;
+    setSubtitle(menu.schoolName);
 
     showScreen("screen-mode");
   } catch (err) {
@@ -304,8 +312,10 @@ document.querySelectorAll(".back-link[data-back]").forEach((btn) => {
 document.getElementById("single-review-btn").addEventListener("click", () => {
   const date = document.getElementById("single-date").value;
   const scheduleKey = document.getElementById("single-schedule").value;
+  const error = document.getElementById("single-error");
+  error.hidden = !!date;
   if (!date) {
-    alert("Pick a date.");
+    error.textContent = "Pick a date.";
     return;
   }
   pendingAssignments = [{ date, scheduleKey }];
@@ -361,17 +371,23 @@ function buildRangeTable(dates) {
   document.getElementById("range-table-wrap").hidden = false;
 }
 
+function showRangeError(message) {
+  const box = document.getElementById("range-error");
+  box.textContent = message;
+  box.hidden = !message;
+}
+
 document.getElementById("range-generate-btn").addEventListener("click", () => {
   const start = document.getElementById("range-start").value;
   const end = document.getElementById("range-end").value;
-  if (!start || !end) {
-    alert("Pick both a start and end date.");
-    return;
-  }
-  if (end < start) {
-    alert("End date must be on or after the start date.");
-    return;
-  }
+  const message =
+    !start || !end
+      ? "Pick both a start date and an end date."
+      : end < start
+        ? "The end date must be on or after the start date."
+        : "";
+  showRangeError(message);
+  if (message) return;
   buildRangeTable(enumerateDates(start, end));
 });
 
@@ -385,9 +401,10 @@ document.getElementById("range-review-btn").addEventListener("click", () => {
     }
   });
   if (assignments.length === 0) {
-    alert("Every date is Blank — nothing to do.");
+    showRangeError("Every date is set to Blank, so there's nothing to create.");
     return;
   }
+  showRangeError("");
   pendingAssignments = assignments;
   reviewOrigin = "screen-range";
   showReview();
@@ -414,7 +431,7 @@ function renderMySchedules() {
     row.className = "block-item";
     const text = document.createElement("span");
     text.className = "block-text";
-    text.textContent = `${item.label} (${item.eventCount} bells)`;
+    text.textContent = `${item.label} (${item.eventCount} events)`;
     text.title = text.textContent;
     const del = document.createElement("button");
     del.className = "block-remove";
@@ -638,7 +655,7 @@ document.getElementById("builder-preview-btn").addEventListener("click", async (
   showBuilderError([]);
 
   document.getElementById("preview-heading").textContent =
-    `${label.trim()}: ${result.events.length} bells`;
+    `${label.trim()}: ${result.events.length} events`;
   const list = document.getElementById("preview-list");
   list.innerHTML = "";
   for (const event of result.events) {
@@ -739,14 +756,14 @@ function appendProgressLine(p, multiDate) {
 
   if (p.type === "date-start") {
     line.className = "line heading";
-    line.textContent = `${p.date} — ${p.label}`;
+    line.textContent = `${p.date}: ${p.label}`;
   } else if (p.type === "event-start") {
     line.className = "line";
     const overallSuffix = multiDate ? ` (${p.overallIndex}/${p.totalEvents} overall)` : "";
     line.textContent = `Creating ${p.index}/${p.countForDate}${overallSuffix}: ${p.event.title} @ ${p.event.start}`;
   } else if (p.type === "event-fail") {
     line.className = "line fail";
-    line.textContent = `FAILED: ${p.error}`;
+    line.textContent = `Failed: ${p.error}`;
   } else {
     return; // event-ok: no separate line, matches the CLI's terse output
   }
@@ -783,7 +800,7 @@ document.getElementById("review-confirm-btn").addEventListener("click", async ()
   const result = await window.api.createEvents(pendingAssignments);
   unsubscribe();
 
-  document.getElementById("progress-heading").textContent = "Done";
+  document.getElementById("progress-heading").textContent = result.ok ? "Done" : "Stopped";
 
   if (result.ok) {
     meter.classList.add("done");
@@ -797,15 +814,15 @@ document.getElementById("review-confirm-btn").addEventListener("click", async ()
 
   if (result.ok) {
     summary.className = "progress-summary success";
-    summary.textContent = `Succeeded: ${result.succeeded}/${result.totalEvents}. All events created successfully.`;
+    summary.textContent = `Created all ${result.totalEvents} events.`;
   } else if (result.haltedOn) {
     summary.className = "progress-summary fail";
     summary.textContent =
-      `Succeeded: ${result.succeeded}/${result.totalEvents}. ` +
-      `Failed: ${result.haltedOn}. Run halted — Edge left open for inspection.`;
+      `Stopped at ${result.haltedOn}. Created ${result.succeeded} of ${result.totalEvents} events. ` +
+      `Edge was left open so you can check the calendar.`;
   } else {
     summary.className = "progress-summary fail";
-    summary.textContent = result.error || "Something went wrong.";
+    summary.textContent = result.error || "The run stopped without an error message.";
   }
   summary.hidden = false;
   doneBtn.hidden = false;
