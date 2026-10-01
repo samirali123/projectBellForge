@@ -164,6 +164,12 @@ function isSchoolReachable(config) {
   return waitForPort(config.cyberDataHost, 443, 3, 1000, 1500);
 }
 
+// Matches only processes that live inside Microsoft Edge.app itself. A bare
+// "Microsoft Edge" also matches apps that embed Edge's engine, like Teams
+// ("Microsoft Teams.app/.../Microsoft Edge Framework.framework/..."), and
+// force-quitting with it was killing Teams along with Edge.
+const EDGE_PROCESS_PATTERN = "/Microsoft Edge\\.app/Contents/";
+
 // Windows install locations for msedge.exe, checked before falling back
 // to the registry App Paths key — Edge usually isn't on PATH by default.
 const WIN_EDGE_PATHS = [
@@ -204,7 +210,7 @@ async function relaunchEdgeWithDebugging(sendStatus, targetUrl) {
   if (process.platform === "darwin") {
     await runCommand("osascript", ["-e", 'quit app "Microsoft Edge"']);
     await sleep(1500);
-    await runCommand("pkill", ["-f", "Microsoft Edge"]);
+    await runCommand("pkill", ["-f", EDGE_PROCESS_PATTERN]);
     await sleep(500);
 
     sendStatus("Launching Edge with remote debugging...");
@@ -213,6 +219,8 @@ async function relaunchEdgeWithDebugging(sendStatus, targetUrl) {
       stdio: "ignore",
     }).unref();
   } else if (process.platform === "win32") {
+    // /IM matches the exact image name, so this doesn't touch apps that
+    // embed Edge (they run as msedgewebview2.exe).
     await runCommand("taskkill", ["/IM", "msedge.exe", "/F"]);
     await sleep(1000);
 

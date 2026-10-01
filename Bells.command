@@ -36,18 +36,23 @@ wait_for_port() {
 # opening it again with --remote-debugging-port just focuses the existing
 # window and silently ignores the flag. So don't just launch and hope:
 # force-quit any running Edge first, then launch clean.
+# Matches only processes inside Microsoft Edge.app itself. A bare
+# "Microsoft Edge" also matches apps that embed Edge's engine, like Teams
+# (".../Microsoft Edge Framework.framework/..."), which got force-quit too.
+EDGE_PROCESS_PATTERN='/Microsoft Edge\.app/Contents/'
+
 relaunch_edge_with_debugging() {
   echo "Making sure no other Edge window is already running (it would"
   echo "block the debug port from opening)..."
   osascript -e 'quit app "Microsoft Edge"' >/dev/null 2>&1
   # Give it a moment to actually exit, then force it if it's still around.
   for i in 1 2 3 4 5; do
-    if ! pgrep -f "Microsoft Edge" >/dev/null 2>&1; then
+    if ! pgrep -f "$EDGE_PROCESS_PATTERN" >/dev/null 2>&1; then
       break
     fi
     sleep 1
   done
-  pkill -f "Microsoft Edge" >/dev/null 2>&1
+  pkill -f "$EDGE_PROCESS_PATTERN" >/dev/null 2>&1
 
   echo "Launching a dedicated Edge window with remote debugging enabled..."
   open -a "Microsoft Edge" --args \
