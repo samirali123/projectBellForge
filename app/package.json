@@ -41,13 +41,18 @@
     "mac": {
       "target": ["dmg", "zip"],
       "category": "public.app-category.education",
-      "icon": "build/icon-mac.png"
+      "icon": "build/icon-mac.png",
+      "artifactName": "bellforgezip-v${version}.${ext}"
+    },
+    "dmg": {
+      "artifactName": "bellforge-v${version}-mac.${ext}"
     },
     "win": {
       "target": ["nsis"],
       "icon": "build/icon.png"
     },
     "nsis": {
+      "artifactName": "bellforge-v${version}-windows.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
