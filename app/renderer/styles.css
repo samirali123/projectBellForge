@@ -18,7 +18,16 @@
   --accent-hover: #641822;
   --danger: #c0392b;
   --danger-bg: #fdecea;
-  --ok: #1f8a4c;
+  --ok: #17703d;
+  --ok-bg: rgba(31, 138, 76, 0.12);
+
+  /* Text-colored links (Back, Get CSV template). Separate from --accent,
+     which is a button fill: the dark-mode accent is too dark to read as
+     text on the dark background. */
+  --link: var(--accent);
+  /* Fill behind white text on destructive buttons. Separate from
+     --danger, which in dark mode is a light red meant for text. */
+  --danger-fill: #c0392b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,6 +42,7 @@
     --danger: #e57368;
     --danger-bg: #3a1f1d;
     --ok: #4ecb84;
+    --link: #e0707a;
   }
 }
 
@@ -233,7 +243,7 @@ button:disabled {
   align-self: flex-start;
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--link);
   font-size: 13px;
   font-weight: 600;
   padding: 0;
@@ -380,7 +390,7 @@ button:disabled {
 
 .progress-summary.success {
   color: var(--ok);
-  background: rgba(31, 138, 76, 0.12);
+  background: var(--ok-bg);
 }
 
 .progress-summary.fail {
@@ -395,7 +405,7 @@ button:disabled {
 .notice {
   font-size: 13px;
   color: var(--ok);
-  background: rgba(31, 138, 76, 0.12);
+  background: var(--ok-bg);
   border-radius: 8px;
   padding: var(--space-3);
   line-height: 1.4;
@@ -547,7 +557,7 @@ button.secondary:hover:not(:disabled) {
 
 button.link-btn {
   background: none;
-  color: var(--accent);
+  color: var(--link);
   font-size: 13px;
   padding: 0;
   margin: 0;
@@ -563,14 +573,14 @@ button.link-btn:hover:not(:disabled) {
 }
 
 .block-item .block-confirm {
-  background: var(--danger);
+  background: var(--danger-fill);
   font-size: 12px;
   padding: var(--space-1) var(--space-2);
   margin: 0;
 }
 
 .block-item .block-confirm:hover:not(:disabled) {
-  background: var(--danger);
+  background: var(--danger-fill);
   filter: brightness(1.1);
 }
 
