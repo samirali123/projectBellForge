@@ -655,3 +655,143 @@ button.link-btn:hover:not(:disabled) {
   background: none;
   text-decoration: underline;
 }
+
+/* --- header: theme switch + step indicator ------------------------------ */
+
+.header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Three-way choice (not an on/off toggle): System, Light, Dark. */
+.segmented {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  flex-shrink: 0;
+}
+
+.segmented button {
+  background: none;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.segmented button:hover:not(:disabled) {
+  background: none;
+  box-shadow: none;
+  color: var(--text);
+}
+
+.segmented button[aria-checked="true"],
+.segmented button[aria-checked="true"]:hover:not(:disabled) {
+  background: var(--gradient-primary);
+  color: #fff;
+}
+
+.steps {
+  display: flex;
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  gap: var(--space-2);
+}
+
+.steps:empty {
+  display: none;
+}
+
+.steps li {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.steps li::before {
+  content: "";
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.steps li.done::before {
+  background: color-mix(in srgb, var(--link) 45%, transparent);
+}
+
+.steps li.current {
+  color: var(--text);
+}
+
+.steps li.current::before {
+  background: var(--gradient-primary);
+  box-shadow: var(--glow-primary);
+}
+
+/* --- progress meter --------------------------------------------------- */
+
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.meter-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter-head #progress-pct {
+  color: var(--text);
+}
+
+.meter-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.meter-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--gradient-primary);
+  box-shadow: var(--glow-primary);
+  transition: width 0.2s ease;
+}
+
+.meter.fail #progress-count {
+  color: var(--danger);
+}
+
+.meter.fail .meter-fill {
+  background: var(--gradient-danger);
+  box-shadow: var(--glow-danger);
+}
+
+.meter.done .meter-fill {
+  background: var(--ok);
+  box-shadow: none;
+}

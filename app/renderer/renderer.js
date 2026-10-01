@@ -23,7 +23,64 @@ function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => {
     s.hidden = s.id !== id;
   });
+  renderSteps(id);
 }
+
+// --- step indicator ----------------------------------------------------------
+// Each screen belongs to one flow; the bar shows that flow's steps with
+// the current one highlighted. Only real flows, nothing decorative.
+
+const FLOWS = {
+  create: ["Connect", "Choose", "Dates", "Review", "Create"],
+  build: ["Connect", "Choose", "Build", "Preview"],
+  manage: ["Connect", "Choose", "My schedules"],
+};
+const SCREEN_STEPS = {
+  "screen-connect": ["create", 0],
+  "screen-mode": ["create", 1],
+  "screen-single": ["create", 2],
+  "screen-range": ["create", 2],
+  "screen-review": ["create", 3],
+  "screen-progress": ["create", 4],
+  "screen-builder": ["build", 2],
+  "screen-builder-preview": ["build", 3],
+  "screen-my-schedules": ["manage", 2],
+};
+
+function renderSteps(screenId) {
+  const list = document.getElementById("steps");
+  list.innerHTML = "";
+  const entry = SCREEN_STEPS[screenId];
+  if (!entry) return;
+  const [flow, current] = entry;
+  FLOWS[flow].forEach((label, i) => {
+    const li = document.createElement("li");
+    li.textContent = label;
+    if (i < current) li.className = "done";
+    if (i === current) {
+      li.className = "current";
+      li.setAttribute("aria-current", "step");
+    }
+    list.appendChild(li);
+  });
+}
+
+// --- theme switch ------------------------------------------------------------
+
+const themeButtons = document.querySelectorAll("#theme-switch button");
+
+function markTheme(theme) {
+  themeButtons.forEach((b) => b.setAttribute("aria-checked", String(b.dataset.theme === theme)));
+}
+
+themeButtons.forEach((b) => {
+  b.addEventListener("click", async () => {
+    const result = await window.api.setTheme(b.dataset.theme);
+    if (result.ok) markTheme(result.theme);
+  });
+});
+
+window.api.getTheme().then(markTheme);
 
 // --- connect screen --------------------------------------------------------
 
@@ -668,6 +725,14 @@ document.getElementById("review-back").addEventListener("click", () => {
 
 // --- progress screen ---------------------------------------------------------
 
+function setMeter(done, total) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById("progress-fill").style.width = `${pct}%`;
+  document.getElementById("progress-pct").textContent = `${pct}%`;
+  document.getElementById("progress-count").textContent = `${done} of ${total} events created`;
+  document.getElementById("progress-meter").setAttribute("aria-valuenow", String(pct));
+}
+
 function appendProgressLine(p, multiDate) {
   const log = document.getElementById("progress-log");
   const line = document.createElement("div");
@@ -700,13 +765,35 @@ document.getElementById("review-confirm-btn").addEventListener("click", async ()
   doneBtn.hidden = true;
   document.getElementById("progress-heading").textContent = "Creating events…";
 
+  const total = pendingAssignments.reduce((sum, { scheduleKey }) => {
+    const item = scheduleMenu.items.find((i) => i.key === scheduleKey);
+    return sum + (item ? item.eventCount : 0);
+  }, 0);
+  const meter = document.getElementById("progress-meter");
+  meter.classList.remove("fail", "done");
+  setMeter(0, total);
+
   const multiDate = pendingAssignments.length > 1;
-  const unsubscribe = window.api.onCreateProgress((p) => appendProgressLine(p, multiDate));
+  const unsubscribe = window.api.onCreateProgress((p) => {
+    appendProgressLine(p, multiDate);
+    if (p.type === "event-ok") setMeter(p.overallIndex, p.totalEvents);
+    if (p.type === "event-fail") meter.classList.add("fail");
+  });
 
   const result = await window.api.createEvents(pendingAssignments);
   unsubscribe();
 
   document.getElementById("progress-heading").textContent = "Done";
+
+  if (result.ok) {
+    meter.classList.add("done");
+  } else {
+    // Say it in words too: the bar's red alone is too close to the
+    // in-progress color in dark mode to signal a failure by itself.
+    meter.classList.add("fail");
+    const done = result.succeeded || 0;
+    document.getElementById("progress-count").textContent = `Stopped after ${done} of ${total} events`;
+  }
 
   if (result.ok) {
     summary.className = "progress-summary success";
@@ -753,4 +840,5 @@ window.addEventListener("error", (e) => {
   showConnectError(`Unexpected error: ${e.message}`);
 });
 
+renderSteps("screen-connect");
 loadSchools();

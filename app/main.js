@@ -6,7 +6,7 @@
 // school's platform engine (connect()/createEvent()) are all reused
 // as-is, not reimplemented here.
 
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, nativeTheme } = require("electron");
 const path = require("path");
 const os = require("os");
 const fs = require("fs");
@@ -60,7 +60,47 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
 }
 
-app.whenReady().then(createWindow);
+// --- appearance -----------------------------------------------------------
+// "system" follows the OS; "light"/"dark" override it. Setting
+// nativeTheme.themeSource is what drives the renderer's
+// prefers-color-scheme, so the CSS needs no theme logic of its own.
+const THEMES = ["system", "light", "dark"];
+
+function settingsPath() {
+  return path.join(app.getPath("userData"), "settings.json");
+}
+
+function readSettings() {
+  try {
+    return JSON.parse(fs.readFileSync(settingsPath(), "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function writeSettings(settings) {
+  fs.mkdirSync(path.dirname(settingsPath()), { recursive: true });
+  fs.writeFileSync(settingsPath(), JSON.stringify(settings, null, 2) + "\n");
+}
+
+ipcMain.handle("get-theme", () => nativeTheme.themeSource);
+
+ipcMain.handle("set-theme", (event, { theme }) => {
+  if (!THEMES.includes(theme)) return { ok: false };
+  nativeTheme.themeSource = theme;
+  try {
+    writeSettings({ ...readSettings(), theme });
+  } catch {
+    // Not being able to remember the choice shouldn't stop it applying now.
+  }
+  return { ok: true, theme };
+});
+
+app.whenReady().then(() => {
+  const { theme } = readSettings();
+  if (THEMES.includes(theme)) nativeTheme.themeSource = theme;
+  createWindow();
+});
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });

@@ -8,8 +8,18 @@
 <body>
   <main class="card">
     <header>
-      <h1>BellForge</h1>
-      <p id="subtitle" class="subtitle">CyberData bell schedule automation</p>
+      <div class="header-row">
+        <div>
+          <h1>BellForge</h1>
+          <p id="subtitle" class="subtitle">CyberData bell schedules</p>
+        </div>
+        <div id="theme-switch" class="segmented" role="radiogroup" aria-label="Appearance">
+          <button type="button" role="radio" data-theme="system">System</button>
+          <button type="button" role="radio" data-theme="light">Light</button>
+          <button type="button" role="radio" data-theme="dark">Dark</button>
+        </div>
+      </div>
+      <ol id="steps" class="steps" aria-label="Progress"></ol>
     </header>
 
     <!-- Screen 1: connect -->
@@ -190,6 +200,13 @@
     <!-- Screen 6: progress -->
     <section id="screen-progress" class="screen" hidden>
       <p class="section-label" id="progress-heading">Creating events…</p>
+      <div class="meter" role="progressbar" id="progress-meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="meter-head">
+          <span id="progress-count"></span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="meter-track"><div id="progress-fill" class="meter-fill"></div></div>
+      </div>
       <div id="progress-log" class="log progress-log"></div>
       <div id="progress-summary" class="progress-summary" hidden></div>
       <button id="progress-done-btn" hidden>Done — start over</button>

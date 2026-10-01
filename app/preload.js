@@ -6,6 +6,8 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("api", {
   listSchools: () => ipcRenderer.invoke("list-schools"),
+  getTheme: () => ipcRenderer.invoke("get-theme"),
+  setTheme: (theme) => ipcRenderer.invoke("set-theme", { theme }),
   checkPassword: (schoolId, password) =>
     ipcRenderer.invoke("check-password", { schoolId, password }),
   checkReachable: (schoolId) => ipcRenderer.invoke("check-reachable", { schoolId }),
